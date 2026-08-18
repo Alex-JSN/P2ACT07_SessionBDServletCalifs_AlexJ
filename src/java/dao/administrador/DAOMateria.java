@@ -1,4 +1,4 @@
-package dao;
+package dao.administrador;
 
 import modelo.Materia;
 import conexion.ConexionMySQL;

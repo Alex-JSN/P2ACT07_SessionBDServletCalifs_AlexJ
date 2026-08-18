@@ -1,9 +1,9 @@
-package control;
+package control.profesor;
 
 import modelo.Usuario;
 import modelo.Calificacion;
 import modelo.Materia;
-import dao.DAOProfesor; // TODO: este DAO no existe todavía — hay que crearlo
+import dao.profesor.DAOProfesor;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;

@@ -1,8 +1,10 @@
-package control;
+package control.administrador;
 
 import modelo.Usuario;
+import modelo.Materia;
 import modelo.Carrera;
-import dao.DAOCarrera;
+import dao.administrador.DAOMateria;
+import dao.administrador.DAOCarrera;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -12,9 +14,10 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "SCarrera", urlPatterns = {"/Carreras"})
-public class SCarrera extends HttpServlet
+@WebServlet(name = "SMateria", urlPatterns = {"/Materias"})
+public class SGestionMateria extends HttpServlet
 {
+    private DAOMateria daoMateria = new DAOMateria();
     private DAOCarrera daoCarrera = new DAOCarrera();
 
     @Override
@@ -40,22 +43,25 @@ public class SCarrera extends HttpServlet
         {
             if ("eliminar".equals(accion))
             {
-                int idCarrera = Integer.parseInt(request.getParameter("idCarrera"));
-                boolean ok = daoCarrera.eliminar(idCarrera);
+                int idMateria = Integer.parseInt(request.getParameter("idMateria"));
+                boolean ok = daoMateria.eliminar(idMateria);
                 session.setAttribute(ok ? "mensaje" : "error",
-                    ok ? "Carrera eliminada exitosamente" : "No se pudo eliminar la carrera");
-                response.sendRedirect(request.getContextPath() + "/Carreras");
+                    ok ? "Materia eliminada exitosamente" : "No se pudo eliminar la materia");
+                response.sendRedirect(request.getContextPath() + "/Materias");
                 return;
             }
 
             if ("editar".equals(accion))
             {
-                int idCarrera = Integer.parseInt(request.getParameter("idCarrera"));
-                Carrera carreraEditar = daoCarrera.obtenerPorId(idCarrera);
-                request.setAttribute("carreraEditar", carreraEditar);
+                int idMateria = Integer.parseInt(request.getParameter("idMateria"));
+                Materia materiaEditar = daoMateria.obtenerPorId(idMateria);
+                request.setAttribute("materiaEditar", materiaEditar);
             }
 
-            List<Carrera> carreras = daoCarrera.listar();
+            List<Materia> materias = daoMateria.listar();
+            List<Carrera> carreras = daoCarrera.listar(); // para el combo del form
+
+            request.setAttribute("materias", materias);
             request.setAttribute("carreras", carreras);
         }
         catch (Exception e)
@@ -64,7 +70,7 @@ public class SCarrera extends HttpServlet
             request.setAttribute("error", "Error al procesar la solicitud: " + e.getMessage());
         }
 
-        request.getRequestDispatcher("/vistas/administrador/carreras.jsp").forward(request, response);
+        request.getRequestDispatcher("/vistas/administrador/materias.jsp").forward(request, response);
     }
 
     @Override
@@ -81,25 +87,24 @@ public class SCarrera extends HttpServlet
 
         try
         {
-            Carrera carrera = new Carrera();
-            carrera.setClave(request.getParameter("clave"));
-            carrera.setCarrera(request.getParameter("carrera"));
-            carrera.setTotalCuatrimestres(Integer.parseInt(request.getParameter("totalCuatrimestres")));
-            carrera.setCuatrimestreEstadia(Integer.parseInt(request.getParameter("cuatrimestreEstadia")));
+            Materia materia = new Materia();
+            materia.setMateria(request.getParameter("materia"));
+            materia.setCuatrimestre(Integer.parseInt(request.getParameter("cuatrimestre")));
+            materia.setIdCarrera(Integer.parseInt(request.getParameter("idCarrera")));
 
             boolean resultado;
             if ("actualizar".equals(accion))
             {
-                carrera.setIdCarrera(Integer.parseInt(request.getParameter("idCarrera")));
-                resultado = daoCarrera.actualizar(carrera);
+                materia.setIdMateria(Integer.parseInt(request.getParameter("idMateria")));
+                resultado = daoMateria.actualizar(materia);
             }
             else
             {
-                resultado = daoCarrera.insertar(carrera);
+                resultado = daoMateria.insertar(materia);
             }
 
             session.setAttribute(resultado ? "mensaje" : "error",
-                resultado ? "Carrera guardada exitosamente" : "Error al guardar. Verifica que la clave no esté repetida.");
+                resultado ? "Materia guardada exitosamente" : "Error al guardar. Verifica que no exista ya esa materia en esa carrera.");
         }
         catch (Exception e)
         {
@@ -107,6 +112,6 @@ public class SCarrera extends HttpServlet
             session.setAttribute("error", "Error: " + e.getMessage());
         }
 
-        response.sendRedirect(request.getContextPath() + "/Carreras");
+        response.sendRedirect(request.getContextPath() + "/Materias");
     }
 }

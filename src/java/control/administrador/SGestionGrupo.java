@@ -1,12 +1,12 @@
-package control;
+package control.administrador;
 
 import modelo.Usuario;
 import modelo.Grupo;
 import modelo.Carrera;
 import modelo.Periodo;
-import dao.DAOGrupo;
-import dao.DAOCarrera;
-import dao.DAOPeriodo;
+import dao.administrador.DAOGrupo;
+import dao.administrador.DAOCarrera;
+import dao.administrador.DAOPeriodo;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.List;
 
 @WebServlet(name = "SGrupo", urlPatterns = {"/Grupos"})
-public class SGrupo extends HttpServlet
+public class SGestionGrupo extends HttpServlet
 {
     private DAOGrupo daoGrupo = new DAOGrupo();
     private DAOCarrera daoCarrera = new DAOCarrera();

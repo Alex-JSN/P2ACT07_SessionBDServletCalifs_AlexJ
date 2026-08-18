@@ -1,4 +1,4 @@
-package dao;
+package dao.administrador;
 
 import modelo.Grupo;
 import conexion.ConexionMySQL;

@@ -1,4 +1,4 @@
-package dao;
+package dao.alumno;
 
 import modelo.Calificacion;
 import modelo.Materia;

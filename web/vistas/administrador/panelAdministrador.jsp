@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@page import="modelo.Usuario, modelo.Materia, modelo.Calificacion, java.util.*"%>
+<%@page import="modelo.Usuario, modelo.Alumno, modelo.Carrera, modelo.Calificacion, java.util.*"%>
 <%
     Usuario usuarioActual = (Usuario) session.getAttribute("usuario");
     if (usuarioActual == null || !"Administrador".equals(usuarioActual.getTipoUsuario()))
@@ -8,8 +8,11 @@
         return;
     }
 
-    List<Usuario> usuarios = (List<Usuario>) request.getAttribute("usuarios");
-    List<Materia> materias = (List<Materia>) request.getAttribute("materias");
+    List<Alumno> alumnos = (List<Alumno>) request.getAttribute("alumnos");
+    List<Carrera> carreras = (List<Carrera>) request.getAttribute("carreras");
+
+    Map<Integer, String> nombreCarreraPorId = new HashMap<>();
+    if (carreras != null) { for (Carrera c : carreras) { nombreCarreraPorId.put(c.getIdCarrera(), c.getCarrera()); } }
 
     String mensaje = (String) session.getAttribute("mensaje");
     String error = (String) session.getAttribute("error");
@@ -39,16 +42,23 @@
                 <% if (mensaje != null) { %><div class="alert alert-success"><%= mensaje%></div><% } %>
                 <% if (error != null) { %><div class="alert alert-error"><%= error%></div><% } %>
 
+                <% if (carreras == null || carreras.isEmpty()) { %>
+                <div class="alert alert-error">
+                    Necesitas registrar al menos una carrera antes de dar de alta alumnos.
+                    <a href="${pageContext.request.contextPath}/Carreras">Ir a Carreras</a>
+                </div>
+                <% } %>
+
                 <div class="title-section">
                     <div class="left">
                         <h2>Alumnos registrados</h2>
-                        <span>Total: <%= (usuarios != null) ? usuarios.size() : 0%> alumnos</span>
+                        <span>Total: <%= (alumnos != null) ? alumnos.size() : 0%> alumnos</span>
                     </div>
                 </div>
 
                 <div class="main-content">
                     <div class="table-container">
-                        <% if (usuarios == null || usuarios.isEmpty()) { %>
+                        <% if (alumnos == null || alumnos.isEmpty()) { %>
                         <div style="text-align:center; padding:40px; color:#718096;">
                             <p style="font-size:14px;">No hay alumnos registrados</p>
                         </div>
@@ -57,10 +67,10 @@
                             <thead>
                                 <tr>
                                     <th class="col-num">#</th>
-                                    <th class="col-matricula">Matrícula</th>
-                                    <th class="col-nombre">Nombre Completo</th>
-                                    <th class="col-correo">Correo</th>
-                                    <th class="col-estado">Estado</th>
+                                    <th>Matrícula</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Correo</th>
+                                    <th>Carrera</th>
                                     <th>Prom. Gral.</th>
                                     <th class="col-acciones">Acciones</th>
                                 </tr>
@@ -68,11 +78,11 @@
                             <tbody>
                                 <%
                                     int contador = 0;
-                                    for (Usuario usuario : usuarios)
+                                    for (Alumno a : alumnos)
                                     {
                                         contador++;
-                                        String rowClass = "Inactivo".equals(usuario.getEstado()) ? "inactivo" : "";
-                                        List<Calificacion> califsFila = (List<Calificacion>) request.getAttribute("califs_" + usuario.getMatricula());
+                                        String nombreCarrera = nombreCarreraPorId.getOrDefault(a.getIdCarrera(), "—");
+                                        List<Calificacion> califsFila = (List<Calificacion>) request.getAttribute("califs_" + a.getMatricula());
                                         Double promGeneral = null;
                                         if (califsFila != null && !califsFila.isEmpty())
                                         {
@@ -85,17 +95,16 @@
                                             if (cnt > 0) { promGeneral = suma / cnt; }
                                         }
                                 %>
-                                <tr class="<%= rowClass%>" onclick="seleccionarAlumno('<%= usuario.getMatricula()%>')" style="cursor:pointer;">
+                                <tr>
                                     <td class="col-num"><%= contador%></td>
-                                    <td class="col-matricula"><strong><%= usuario.getMatricula()%></strong></td>
-                                    <td class="col-nombre"><%= usuario.getNombre()%> <%= usuario.getPaterno()%> <%= usuario.getMaterno() != null ? usuario.getMaterno() : ""%></td>
-                                    <td class="col-correo"><%= usuario.getCorreo()%></td>
-                                    <td class="col-estado"><span class="badge <%= "Activo".equals(usuario.getEstado()) ? "badge-success" : "badge-danger"%>"><%= usuario.getEstado()%></span></td>
+                                    <td><strong><%= a.getMatricula()%></strong></td>
+                                    <td><%= a.getNombre()%> <%= a.getPaterno()%> <%= a.getMaterno() != null ? a.getMaterno() : ""%></td>
+                                    <td><%= a.getCorreo()%></td>
+                                    <td><%= nombreCarrera%></td>
                                     <td><%= promGeneral != null ? String.format("%.1f", promGeneral) : "—"%></td>
                                     <td class="col-acciones">
-                                        <button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); editarAlumno('<%= usuario.getMatricula()%>')" title="Editar">✏️</button>
-                                        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); eliminarAlumno('<%= usuario.getMatricula()%>')" title="Eliminar">🗑️</button>
-                                        <button class="btn btn-sm <%= "Activo".equals(usuario.getEstado()) ? "btn-danger" : "btn-success"%>" onclick="event.stopPropagation(); toggleEstado('<%= usuario.getMatricula()%>', '<%= usuario.getEstado()%>')" title="<%= "Activo".equals(usuario.getEstado()) ? "Desactivar" : "Activar"%>"><%= "Activo".equals(usuario.getEstado()) ? "🔴" : "🟢"%></button>
+                                        <button class="btn btn-warning btn-sm" onclick="editarAlumno(<%= a.getIdAlumno()%>, '<%= a.getMatricula()%>', '<%= a.getNombre()%>', '<%= a.getPaterno()%>', '<%= a.getMaterno() != null ? a.getMaterno() : ""%>', '<%= a.getCorreo()%>', <%= a.getIdCarrera()%>)" title="Editar">✏️</button>
+                                        <button class="btn btn-danger btn-sm" onclick="eliminarAlumno('<%= a.getMatricula()%>')" title="Eliminar">🗑️</button>
                                     </td>
                                 </tr>
                                 <% } %>
@@ -105,59 +114,47 @@
                     </div>
 
                     <div class="form-panel" id="formPanel">
-                        <h3>Asignar Calificaciones</h3>
-                        <form id="formCalificacion" action="${pageContext.request.contextPath}/PanelAdministrador" method="POST">
-                            <input type="hidden" name="accion" value="guardarCalificacion">
-                            <input type="hidden" id="matriculaAlumno" name="matriculaAlumno">
+                        <h3 id="formTitulo">Registrar Alumno</h3>
+                        <form id="formAlumno" action="${pageContext.request.contextPath}/PanelAdministrador" method="POST">
+                            <input type="hidden" id="accion" name="accion" value="crearAlumno">
+                            <input type="hidden" id="idAlumno" name="idAlumno" value="">
 
                             <div class="form-group">
-                                <label>Alumno Seleccionado</label>
-                                <select id="selectAlumno" class="select-alumno" onchange="cargarAlumno(this.value)">
-                                    <option value="">-- SELECCIONA UN ALUMNO --</option>
-                                    <% if (usuarios != null) { for (Usuario usuario : usuarios) { %>
-                                    <option value="<%= usuario.getMatricula()%>">
-                                        <%= usuario.getNombre()%> <%= usuario.getPaterno()%> - <%= usuario.getMatricula()%>
-                                    </option>
-                                    <% } } %>
-                                </select>
+                                <label>Matrícula</label>
+                                <input type="text" id="matriculaNueva" name="matriculaNueva" maxlength="13" required>
                             </div>
-
                             <div class="form-group">
-                                <label>Materia</label>
-                                <select id="idMateria" name="idMateria" onchange="autocompletarCalificacion()">
-                                    <option value="">-- SELECCIONA UNA MATERIA --</option>
-                                    <% if (materias != null) { for (Materia materia : materias) { %>
-                                    <option value="<%= materia.getIdMateria()%>"><%= materia.getMateria()%></option>
-                                    <% } } %>
-                                </select>
+                                <label>Nombre</label>
+                                <input type="text" id="nombre" name="nombre" maxlength="45" required>
                             </div>
-
-                            <div class="form-group">
-                                <label>Periodo</label>
-                                <select id="periodo" name="periodo" onchange="autocompletarCalificacion()">
-                                    <option value="2026-1" selected>2026-1</option>
-                                    <option value="2026-2">2026-2</option>
-                                </select>
-                            </div>
-
                             <div class="form-row">
-                                <div class="form-group"><label>Parcial 1</label><input type="number" id="parcial1" name="parcial1" min="0" max="10" step="0.1" placeholder="8"></div>
-                                <div class="form-group"><label>Parcial 2</label><input type="number" id="parcial2" name="parcial2" min="0" max="10" step="0.1" placeholder="9"></div>
+                                <div class="form-group">
+                                    <label>Apellido Paterno</label>
+                                    <input type="text" id="paterno" name="paterno" maxlength="45" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Apellido Materno</label>
+                                    <input type="text" id="materno" name="materno" maxlength="45">
+                                </div>
                             </div>
-                            <div class="form-group"><label>Parcial 3</label><input type="number" id="parcial3" name="parcial3" min="0" max="10" step="0.1" placeholder="10"></div>
+                            <div class="form-group">
+                                <label>Correo</label>
+                                <input type="email" id="correo" name="correo" maxlength="100" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Carrera</label>
+                                <select id="idCarrera" name="idCarrera" required>
+                                    <option value="">-- SELECCIONA UNA CARRERA --</option>
+                                    <% if (carreras != null) { for (Carrera c : carreras) { %>
+                                    <option value="<%= c.getIdCarrera()%>"><%= c.getCarrera()%></option>
+                                    <% } } %>
+                                </select>
+                            </div>
 
                             <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">Guardar</button>
-                                <button type="button" class="btn btn-danger" onclick="limpiarFormulario()">Limpiar</button>
+                                <button type="submit" class="btn btn-primary" <%= (carreras == null || carreras.isEmpty()) ? "disabled" : ""%>>Guardar</button>
+                                <button type="button" class="btn btn-danger" onclick="limpiarFormulario()">Cancelar</button>
                             </div>
-                        </form>
-
-                        <form id="formEliminarCalif" action="${pageContext.request.contextPath}/PanelAdministrador" method="POST">
-                            <input type="hidden" name="accion" value="eliminarCalificacion">
-                            <input type="hidden" id="elimMatriculaAlumno" name="matriculaAlumno">
-                            <input type="hidden" id="elimIdMateria" name="idMateria">
-                            <input type="hidden" id="elimPeriodo" name="periodo">
-                            <button type="submit" class="btn btn-danger btn-eliminar-calif" onclick="return confirm('¿Eliminar esta calificación?')">Eliminar Calificación</button>
                         </form>
                     </div>
                 </div>
@@ -165,95 +162,32 @@
         </div>
 
         <script>
-            // Mapa: "matricula|idMateria|periodo" -> {p1,p2,p3}, para autocompletar el form
-            // al elegir alumno+materia+periodo que ya tienen calificación guardada.
-            var calificacionesData = {};
-            <%
-                if (usuarios != null)
-                {
-                    for (Usuario usuario : usuarios)
-                    {
-                        List<Calificacion> califsJs = (List<Calificacion>) request.getAttribute("califs_" + usuario.getMatricula());
-                        if (califsJs != null)
-                        {
-                            for (Calificacion c : califsJs)
-                            {
-                                String key = usuario.getMatricula() + "|" + c.getIdMateria() + "|" + c.getNombrePeriodo();
-            %>
-            calificacionesData["<%= key%>"] = {
-                p1: <%= c.getParcial1() != null ? c.getParcial1() : "null"%>,
-                p2: <%= c.getParcial2() != null ? c.getParcial2() : "null"%>,
-                p3: <%= c.getParcial3() != null ? c.getParcial3() : "null"%>
-            };
-            <%
-                            }
-                        }
-                    }
-                }
-            %>
-
-            function cargarAlumno(matricula)
+            function editarAlumno(idAlumno, matricula, nombre, paterno, materno, correo, idCarrera)
             {
-                if (!matricula) { limpiarFormulario(); return; }
-                document.getElementById('matriculaAlumno').value = matricula;
-                document.getElementById('elimMatriculaAlumno').value = matricula;
-                autocompletarCalificacion();
-            }
-
-            function autocompletarCalificacion()
-            {
-                var matricula = document.getElementById('selectAlumno').value;
-                var idMateria = document.getElementById('idMateria').value;
-                var periodo = document.getElementById('periodo').value;
-
-                document.getElementById('elimIdMateria').value = idMateria;
-                document.getElementById('elimPeriodo').value = periodo;
-
-                if (!matricula || !idMateria) { return; }
-
-                var key = matricula + "|" + idMateria + "|" + periodo;
-                var existente = calificacionesData[key];
-
-                document.getElementById('parcial1').value = existente && existente.p1 !== null ? existente.p1 : '';
-                document.getElementById('parcial2').value = existente && existente.p2 !== null ? existente.p2 : '';
-                document.getElementById('parcial3').value = existente && existente.p3 !== null ? existente.p3 : '';
-            }
-
-            function seleccionarAlumno(matricula)
-            {
-                document.getElementById('selectAlumno').value = matricula;
-                cargarAlumno(matricula);
-                if (window.innerWidth <= 1100) { document.getElementById('formPanel').scrollIntoView({behavior:'smooth', block:'start'}); }
-            }
-
-            function editarAlumno(matricula)
-            {
-                window.location.href = '${pageContext.request.contextPath}/PanelAdministrador?accion=editar&matricula=' + matricula;
+                document.getElementById('formTitulo').innerText = 'Editar Alumno';
+                document.getElementById('accion').value = 'actualizarAlumno';
+                document.getElementById('idAlumno').value = idAlumno;
+                document.getElementById('matriculaNueva').value = matricula;
+                document.getElementById('nombre').value = nombre;
+                document.getElementById('paterno').value = paterno;
+                document.getElementById('materno').value = materno;
+                document.getElementById('correo').value = correo;
+                document.getElementById('idCarrera').value = idCarrera;
+                document.getElementById('formPanel').scrollIntoView({behavior:'smooth', block:'start'});
             }
 
             function eliminarAlumno(matricula)
             {
-                if (confirm('⚠️ ¿Estás seguro de eliminar este alumno?\nSe eliminarán también sus calificaciones.'))
+                if (confirm('⚠️ ¿Eliminar este alumno?\nSe eliminarán también sus calificaciones e inscripciones.'))
                 { window.location.href = '${pageContext.request.contextPath}/PanelAdministrador?accion=eliminar&matricula=' + matricula; }
-            }
-
-            function toggleEstado(matricula, estadoActual)
-            {
-                const nuevoEstado = estadoActual === 'Activo' ? 'Inactivo' : 'Activo';
-                const mensaje = nuevoEstado === 'Activo' ? '¿Activar este usuario?' : '¿Desactivar este usuario?';
-                if (!confirm(mensaje)) return;
-                window.location.href = '${pageContext.request.contextPath}/PanelAdministrador?accion=cambiarEstado&matricula=' + matricula + '&estado=' + nuevoEstado;
             }
 
             function limpiarFormulario()
             {
-                document.getElementById('selectAlumno').value = '';
-                document.getElementById('idMateria').value = '';
-                document.getElementById('matriculaAlumno').value = '';
-                document.getElementById('elimMatriculaAlumno').value = '';
-                document.getElementById('parcial1').value = '';
-                document.getElementById('parcial2').value = '';
-                document.getElementById('parcial3').value = '';
+                document.getElementById('formTitulo').innerText = 'Registrar Alumno';
+                document.getElementById('accion').value = 'crearAlumno';
+                document.getElementById('idAlumno').value = '';
+                document.getElementById('formAlumno').reset();
             }
         </script>
     </body>

@@ -1,8 +1,8 @@
-package control;
+package control.administrador;
 
 import modelo.Usuario;
 import modelo.Periodo;
-import dao.DAOPeriodo;
+import dao.administrador.DAOPeriodo;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,7 +14,7 @@ import java.sql.Date;
 import java.util.List;
 
 @WebServlet(name = "SPeriodo", urlPatterns = {"/Periodos"})
-public class SPeriodo extends HttpServlet
+public class SGestionPeriodo extends HttpServlet
 {
     private DAOPeriodo daoPeriodo = new DAOPeriodo();
 

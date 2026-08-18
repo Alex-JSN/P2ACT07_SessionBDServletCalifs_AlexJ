@@ -1,4 +1,4 @@
-package dao;
+package dao.profesor;
 
 import modelo.Profesor;
 import conexion.ConexionMySQL;

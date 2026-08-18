@@ -1,8 +1,8 @@
-package control;
+package control.administrador;
 
 import modelo.Usuario;
 import modelo.Profesor;
-import dao.DAOProfesor;
+import dao.profesor.DAOProfesor;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;

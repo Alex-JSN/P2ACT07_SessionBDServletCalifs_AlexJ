@@ -1,6 +1,6 @@
-package control;
+package control.alumno;
 
-import dao.DAOAlumno;
+import dao.alumno.DAOAlumno;
 import modelo.Usuario;
 import modelo.Calificacion;
 import modelo.Materia;

@@ -90,7 +90,7 @@
 
                     <div class="form-panel" id="formPanel">
                         <h3 id="formTitulo">Nueva Carrera</h3>
-                        <form id="formCarrera" action="${pageContext.request.contextPath}/PanelCarrera" method="POST">
+                        <form id="formCarrera" action="${pageContext.request.contextPath}/Carreras" method="POST">
                             <input type="hidden" id="accion" name="accion" value="crear">
                             <input type="hidden" id="idCarrera" name="idCarrera" value="">
 
