@@ -53,9 +53,17 @@
         <li class="<%= "periodos".equals(seccion) ? "active" : ""%>">
             <a href="${pageContext.request.contextPath}/Periodos"><span class="icon">🗓️</span> Periodos</a>
         </li>
+        <li class="<%= "inscripciones".equals(seccion) ? "active" : ""%>">
+            <a href="${pageContext.request.contextPath}/Inscripciones"><span class="icon">📝</span> Inscripciones</a>
+        </li>
+        <li class="<%= "asignaciones".equals(seccion) ? "active" : ""%>">
+            <a href="${pageContext.request.contextPath}/Asignaciones"><span class="icon">🔗</span> Asignaciones</a>
+        </li>
 
         <li class="nav-section-label">Sistema</li>
-        <li class="disabled"><a href="#"><span class="icon">👤</span> Cuentas <span class="nav-tag">Próx.</span></a></li>
+        <li class="<%= "cuentas".equals(seccion) ? "active" : ""%>">
+            <a href="${pageContext.request.contextPath}/Cuentas"><span class="icon">👤</span> Cuentas</a>
+        </li>
     </ul>
 
     <div class="sidebar-footer">

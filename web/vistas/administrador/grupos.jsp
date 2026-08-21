@@ -1,5 +1,18 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="modelo.Usuario, modelo.Grupo, modelo.Carrera, modelo.Periodo, java.util.*"%>
+<%!
+    // Escapa caracteres especiales de HTML/atributos para evitar XSS.
+    // Usalo siempre que insertes datos de usuario o BD dentro de una expresion de salida,
+    // ya sea en el cuerpo del HTML o dentro de un atributo (value="...", data-x="...").
+    private String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
+    }
+%>
 <%
     Usuario usuarioActual = (Usuario) session.getAttribute("usuario");
     if (usuarioActual == null || !"Administrador".equals(usuarioActual.getTipoUsuario()))
@@ -29,24 +42,25 @@
 <html>
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Panel Administrador - Grupos</title>
         <link rel="stylesheet" href="${pageContext.request.contextPath}/recursos/css/basePanel.css">
     </head>
     <body>
         <div class="app-shell">
 
-            <jsp:include page="menuAdmin.jsp"><jsp:param name="seccion" value="grupos"/></jsp:include>
+            <jsp:include page="menuAdministrador.jsp"><jsp:param name="seccion" value="grupos"/></jsp:include>
 
             <main class="content-area">
                 <div class="panel-header">
                     <div class="left">
                         <h1>Gestión de Grupos</h1>
-                        <span class="welcome-text">Bienvenido, <%= usuarioActual.getNombre()%></span>
+                        <span class="welcome-text">Bienvenido, <%= esc(usuarioActual.getNombre())%></span>
                     </div>
                 </div>
 
-                <% if (mensaje != null) { %><div class="alert alert-success"><%= mensaje%></div><% } %>
-                <% if (error != null) { %><div class="alert alert-error"><%= error%></div><% } %>
+                <% if (mensaje != null) { %><div class="alert alert-success"><%= esc(mensaje)%></div><% } %>
+                <% if (error != null) { %><div class="alert alert-error"><%= esc(error)%></div><% } %>
 
                 <% if (faltanDatos) { %>
                 <div class="alert alert-error">
@@ -92,13 +106,27 @@
                                 %>
                                 <tr>
                                     <td class="col-num"><%= contador%></td>
-                                    <td><strong><%= g.getCuatrimestre()%><%= g.getLetra()%></strong></td>
-                                    <td><%= g.getGeneracion()%></td>
-                                    <td><%= nombreCarrera%></td>
-                                    <td><%= nombrePeriodo%></td>
+                                    <td><strong><%= g.getCuatrimestre()%><%= esc(g.getLetra())%></strong></td>
+                                    <td><%= esc(g.getGeneracion())%></td>
+                                    <td><%= esc(nombreCarrera)%></td>
+                                    <td><%= esc(nombrePeriodo)%></td>
                                     <td class="col-acciones">
-                                        <button class="btn btn-warning btn-sm" onclick="editarGrupo(<%= g.getIdGrupo()%>, '<%= g.getGeneracion()%>', <%= g.getCuatrimestre()%>, '<%= g.getLetra()%>', <%= g.getIdCarrera()%>, <%= g.getIdPeriodo()%>)" title="Editar">✏️</button>
-                                        <button class="btn btn-danger btn-sm" onclick="eliminarGrupo(<%= g.getIdGrupo()%>)" title="Eliminar">🗑️</button>
+                                        <!--
+                                            Antes: onclick="editarGrupo(..., '<%= g.getGeneracion() %>', ..., '<%= g.getLetra() %>', ...)"
+                                            Sin ningun escape. Una Generacion como 2024's o con comillas
+                                            rompia el JS directamente. Ahora va todo por data-*.
+                                        -->
+                                        <button class="btn btn-warning btn-sm btn-editar"
+                                                data-id="<%= g.getIdGrupo()%>"
+                                                data-generacion="<%= esc(g.getGeneracion())%>"
+                                                data-cuatrimestre="<%= g.getCuatrimestre()%>"
+                                                data-letra="<%= esc(g.getLetra())%>"
+                                                data-id-carrera="<%= g.getIdCarrera()%>"
+                                                data-id-periodo="<%= g.getIdPeriodo()%>"
+                                                title="Editar">✏️</button>
+                                        <button class="btn btn-danger btn-sm btn-eliminar"
+                                                data-id="<%= g.getIdGrupo()%>"
+                                                title="Eliminar">🗑️</button>
                                     </td>
                                 </tr>
                                 <% } %>
@@ -115,16 +143,19 @@
 
                             <div class="form-group">
                                 <label>Generación</label>
-                                <input type="text" id="generacion" name="generacion" maxlength="45" required placeholder="2024-2027">
+                                <input type="text" id="generacion" name="generacion" maxlength="45" required
+                                       placeholder="Ej: 2024-2027 (texto, máx. 45)">
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label>Cuatrimestre</label>
-                                    <input type="number" id="cuatrimestre" name="cuatrimestre" min="1" max="20" required>
+                                    <input type="number" id="cuatrimestre" name="cuatrimestre" min="1" max="20" required
+                                           placeholder="Ej: 3 (entero, 1-20)">
                                 </div>
                                 <div class="form-group">
                                     <label>Letra</label>
-                                    <input type="text" id="letra" name="letra" maxlength="1" required placeholder="A">
+                                    <input type="text" id="letra" name="letra" maxlength="1" required
+                                           placeholder="Ej: A (1 solo carácter)">
                                 </div>
                             </div>
                             <div class="form-group">
@@ -132,7 +163,7 @@
                                 <select id="idCarrera" name="idCarrera" required>
                                     <option value="">-- SELECCIONA UNA CARRERA --</option>
                                     <% if (carreras != null) { for (Carrera c : carreras) { %>
-                                    <option value="<%= c.getIdCarrera()%>"><%= c.getCarrera()%></option>
+                                    <option value="<%= c.getIdCarrera()%>"><%= esc(c.getCarrera())%></option>
                                     <% } } %>
                                 </select>
                             </div>
@@ -141,7 +172,7 @@
                                 <select id="idPeriodo" name="idPeriodo" required>
                                     <option value="">-- SELECCIONA UN PERIODO --</option>
                                     <% if (periodos != null) { for (Periodo p : periodos) { %>
-                                    <option value="<%= p.getIdPeriodo()%>"><%= p.getNombre()%></option>
+                                    <option value="<%= p.getIdPeriodo()%>"><%= esc(p.getNombre())%></option>
                                     <% } } %>
                                 </select>
                             </div>
@@ -157,6 +188,25 @@
         </div>
 
         <script>
+            document.querySelectorAll('.btn-editar').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    editarGrupo(
+                        this.dataset.id,
+                        this.dataset.generacion,
+                        this.dataset.cuatrimestre,
+                        this.dataset.letra,
+                        this.dataset.idCarrera,
+                        this.dataset.idPeriodo
+                    );
+                });
+            });
+
+            document.querySelectorAll('.btn-eliminar').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    eliminarGrupo(this.dataset.id);
+                });
+            });
+
             function editarGrupo(id, generacion, cuatrimestre, letra, idCarrera, idPeriodo)
             {
                 document.getElementById('formTitulo').innerText = 'Editar Grupo';
@@ -167,7 +217,7 @@
                 document.getElementById('letra').value = letra;
                 document.getElementById('idCarrera').value = idCarrera;
                 document.getElementById('idPeriodo').value = idPeriodo;
-                document.getElementById('formPanel').scrollIntoView({behavior:'smooth', block:'start'});
+                document.getElementById('formPanel').scrollIntoView({behavior: 'smooth', block: 'start'});
             }
 
             function eliminarGrupo(id)

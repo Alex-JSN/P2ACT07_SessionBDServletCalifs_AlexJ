@@ -76,6 +76,6 @@
                 </div>
             </div>
         </main>
-        <script src="${pageContext.request.contextPath}/js/ojitoContrasena.js"></script>
+        <script src="${pageContext.request.contextPath}/recursos/js/ojitoContrasena.js"></script>
     </body>
 </html>

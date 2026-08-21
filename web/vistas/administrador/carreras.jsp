@@ -2,8 +2,7 @@
 <%@page import="modelo.Usuario, modelo.Carrera, java.util.*"%>
 <%
     Usuario usuarioActual = (Usuario) session.getAttribute("usuario");
-    if (usuarioActual == null || !"Administrador".equals(usuarioActual.getTipoUsuario()))
-    {
+    if (usuarioActual == null || !"Administrador".equals(usuarioActual.getTipoUsuario())) {
         response.sendRedirect(request.getContextPath() + "/loginUsuario.jsp");
         return;
     }
@@ -13,8 +12,12 @@
 
     String mensaje = (String) session.getAttribute("mensaje");
     String error = (String) session.getAttribute("error");
-    if (mensaje != null) { session.removeAttribute("mensaje"); }
-    if (error != null) { session.removeAttribute("error"); }
+    if (mensaje != null) {
+        session.removeAttribute("mensaje");
+    }
+    if (error != null) {
+        session.removeAttribute("error");
+    }
 %>
 <!DOCTYPE html>
 <html>
@@ -26,18 +29,18 @@
     <body>
         <div class="app-shell">
 
-            <jsp:include page="menuAdmin.jsp"><jsp:param name="seccion" value="carreras"/></jsp:include>
+            <jsp:include page="menuAdministrador.jsp"><jsp:param name="seccion" value="carreras"/></jsp:include>
 
-            <main class="content-area">
-                <div class="panel-header">
-                    <div class="left">
-                        <h1>Gestión de Carreras</h1>
-                        <span class="welcome-text">Bienvenido, <%= usuarioActual.getNombre()%></span>
+                <main class="content-area">
+                    <div class="panel-header">
+                        <div class="left">
+                            <h1>Gestión de Carreras</h1>
+                            <span class="welcome-text">Bienvenido, <%= usuarioActual.getNombre()%></span>
                     </div>
                 </div>
 
-                <% if (mensaje != null) { %><div class="alert alert-success"><%= mensaje%></div><% } %>
-                <% if (error != null) { %><div class="alert alert-error"><%= error%></div><% } %>
+                <% if (mensaje != null) {%><div class="alert alert-success"><%= mensaje%></div><% } %>
+                <% if (error != null) {%><div class="alert alert-error"><%= error%></div><% }%>
 
                 <div class="title-section">
                     <div class="left">
@@ -67,8 +70,7 @@
                             <tbody>
                                 <%
                                     int contador = 0;
-                                    for (Carrera c : carreras)
-                                    {
+                                    for (Carrera c : carreras) {
                                         contador++;
                                 %>
                                 <tr>
@@ -85,7 +87,7 @@
                                 <% } %>
                             </tbody>
                         </table>
-                        <% } %>
+                        <% }%>
                     </div>
 
                     <div class="form-panel" id="formPanel">
@@ -133,13 +135,15 @@
                 document.getElementById('carreraNombre').value = carrera;
                 document.getElementById('totalCuatrimestres').value = totalCuatrimestres;
                 document.getElementById('cuatrimestreEstadia').value = cuatrimestreEstadia;
-                document.getElementById('formPanel').scrollIntoView({behavior:'smooth', block:'start'});
+                document.getElementById('formPanel').scrollIntoView({behavior: 'smooth', block: 'start'});
             }
 
             function eliminarCarrera(id)
             {
                 if (confirm('⚠️ ¿Eliminar esta carrera?\nSe eliminarán también sus grupos, materias y alumnos asociados.'))
-                { window.location.href = '${pageContext.request.contextPath}/PanelCarrera?accion=eliminar&idCarrera=' + id; }
+                {
+                    window.location.href = '${pageContext.request.contextPath}/Carreras?accion=eliminar&idCarrera=' + id;
+                }
             }
 
             function limpiarFormulario()

@@ -1,5 +1,18 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="modelo.Usuario, modelo.Periodo, java.util.*"%>
+<%!
+    // Escapa caracteres especiales de HTML/atributos para evitar XSS.
+    // Usalo siempre que insertes datos de usuario o BD dentro de una expresion de salida,
+    // ya sea en el cuerpo del HTML o dentro de un atributo (value="...", data-x="...").
+    private String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
+    }
+%>
 <%
     Usuario usuarioActual = (Usuario) session.getAttribute("usuario");
     if (usuarioActual == null || !"Administrador".equals(usuarioActual.getTipoUsuario()))
@@ -19,24 +32,25 @@
 <html>
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Panel Administrador - Periodos</title>
         <link rel="stylesheet" href="${pageContext.request.contextPath}/recursos/css/basePanel.css">
     </head>
     <body>
         <div class="app-shell">
 
-            <jsp:include page="menuAdmin.jsp"><jsp:param name="seccion" value="periodos"/></jsp:include>
+            <jsp:include page="menuAdministrador.jsp"><jsp:param name="seccion" value="periodos"/></jsp:include>
 
             <main class="content-area">
                 <div class="panel-header">
                     <div class="left">
                         <h1>Gestión de Periodos</h1>
-                        <span class="welcome-text">Bienvenido, <%= usuarioActual.getNombre()%></span>
+                        <span class="welcome-text">Bienvenido, <%= esc(usuarioActual.getNombre())%></span>
                     </div>
                 </div>
 
-                <% if (mensaje != null) { %><div class="alert alert-success"><%= mensaje%></div><% } %>
-                <% if (error != null) { %><div class="alert alert-error"><%= error%></div><% } %>
+                <% if (mensaje != null) { %><div class="alert alert-success"><%= esc(mensaje)%></div><% } %>
+                <% if (error != null) { %><div class="alert alert-error"><%= esc(error)%></div><% } %>
 
                 <div class="title-section">
                     <div class="left">
@@ -69,16 +83,35 @@
                                     for (Periodo p : periodos)
                                     {
                                         contador++;
+                                        String badgeClase;
+                                        switch (p.getEstado())
+                                        {
+                                            case "Activo":     badgeClase = "badge-success"; break;
+                                            case "Cerrado":    badgeClase = "badge-danger";  break;
+                                            default:           badgeClase = "badge-warning"; break; // Programado
+                                        }
                                 %>
                                 <tr>
                                     <td class="col-num"><%= contador%></td>
-                                    <td><strong><%= p.getNombre()%></strong></td>
+                                    <td><strong><%= esc(p.getNombre())%></strong></td>
                                     <td><%= p.getFechaInicio()%></td>
                                     <td><%= p.getFechaFin()%></td>
-                                    <td><span class="badge badge-success"><%= p.getEstado()%></span></td>
+                                    <td><span class="badge <%= badgeClase%>"><%= esc(p.getEstado())%></span></td>
                                     <td class="col-acciones">
-                                        <button class="btn btn-warning btn-sm" onclick="editarPeriodo(<%= p.getIdPeriodo()%>, '<%= p.getNombre()%>', '<%= p.getFechaInicio()%>', '<%= p.getFechaFin()%>', '<%= p.getEstado()%>')" title="Editar">✏️</button>
-                                        <button class="btn btn-danger btn-sm" onclick="eliminarPeriodo(<%= p.getIdPeriodo()%>)" title="Eliminar">🗑️</button>
+                                        <!--
+                                            Antes: onclick="editarPeriodo(..., '<%= p.getNombre() %>', ...)"
+                                            sin escape. Ahora va todo por data-*.
+                                        -->
+                                        <button class="btn btn-warning btn-sm btn-editar"
+                                                data-id="<%= p.getIdPeriodo()%>"
+                                                data-nombre="<%= esc(p.getNombre())%>"
+                                                data-fecha-inicio="<%= p.getFechaInicio()%>"
+                                                data-fecha-fin="<%= p.getFechaFin()%>"
+                                                data-estado="<%= esc(p.getEstado())%>"
+                                                title="Editar">✏️</button>
+                                        <button class="btn btn-danger btn-sm btn-eliminar"
+                                                data-id="<%= p.getIdPeriodo()%>"
+                                                title="Eliminar">🗑️</button>
                                     </td>
                                 </tr>
                                 <% } %>
@@ -95,7 +128,8 @@
 
                             <div class="form-group">
                                 <label>Nombre</label>
-                                <input type="text" id="nombre" name="nombre" maxlength="45" required placeholder="2026-1">
+                                <input type="text" id="nombre" name="nombre" maxlength="45" required
+                                       placeholder="Ej: 2026-1 (texto, máx. 45)">
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
@@ -127,6 +161,24 @@
         </div>
 
         <script>
+            document.querySelectorAll('.btn-editar').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    editarPeriodo(
+                        this.dataset.id,
+                        this.dataset.nombre,
+                        this.dataset.fechaInicio,
+                        this.dataset.fechaFin,
+                        this.dataset.estado
+                    );
+                });
+            });
+
+            document.querySelectorAll('.btn-eliminar').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    eliminarPeriodo(this.dataset.id);
+                });
+            });
+
             function editarPeriodo(id, nombre, fechaInicio, fechaFin, estado)
             {
                 document.getElementById('formTitulo').innerText = 'Editar Periodo';
@@ -136,7 +188,7 @@
                 document.getElementById('fechaInicio').value = fechaInicio;
                 document.getElementById('fechaFin').value = fechaFin;
                 document.getElementById('estado').value = estado;
-                document.getElementById('formPanel').scrollIntoView({behavior:'smooth', block:'start'});
+                document.getElementById('formPanel').scrollIntoView({behavior: 'smooth', block: 'start'});
             }
 
             function eliminarPeriodo(id)

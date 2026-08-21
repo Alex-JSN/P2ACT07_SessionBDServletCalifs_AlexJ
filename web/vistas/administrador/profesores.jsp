@@ -1,5 +1,18 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="modelo.Usuario, modelo.Profesor, java.util.*"%>
+<%!
+    // Escapa caracteres especiales de HTML/atributos para evitar XSS.
+    // Usalo siempre que insertes datos de usuario o BD dentro de una expresion de salida,
+    // ya sea en el cuerpo del HTML o dentro de un atributo (value="...", data-x="...").
+    private String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
+    }
+%>
 <%
     Usuario usuarioActual = (Usuario) session.getAttribute("usuario");
     if (usuarioActual == null || !"Administrador".equals(usuarioActual.getTipoUsuario()))
@@ -19,24 +32,25 @@
 <html>
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Panel Administrador - Profesores</title>
         <link rel="stylesheet" href="${pageContext.request.contextPath}/recursos/css/basePanel.css">
     </head>
     <body>
         <div class="app-shell">
 
-            <jsp:include page="menuAdmin.jsp"><jsp:param name="seccion" value="profesores"/></jsp:include>
+            <jsp:include page="menuAdministrador.jsp"><jsp:param name="seccion" value="profesores"/></jsp:include>
 
             <main class="content-area">
                 <div class="panel-header">
                     <div class="left">
                         <h1>Gestión de Profesores</h1>
-                        <span class="welcome-text">Bienvenido, <%= usuarioActual.getNombre()%></span>
+                        <span class="welcome-text">Bienvenido, <%= esc(usuarioActual.getNombre())%></span>
                     </div>
                 </div>
 
-                <% if (mensaje != null) { %><div class="alert alert-success"><%= mensaje%></div><% } %>
-                <% if (error != null) { %><div class="alert alert-error"><%= error%></div><% } %>
+                <% if (mensaje != null) { %><div class="alert alert-success"><%= esc(mensaje)%></div><% } %>
+                <% if (error != null) { %><div class="alert alert-error"><%= esc(error)%></div><% } %>
 
                 <div class="title-section">
                     <div class="left">
@@ -56,7 +70,7 @@
                             <thead>
                                 <tr>
                                     <th class="col-num">#</th>
-                                    <th>Matrícula</th>
+                                    <th>Clave</th>
                                     <th>Nombre Completo</th>
                                     <th>Correo</th>
                                     <th>Cédula</th>
@@ -73,14 +87,24 @@
                                 %>
                                 <tr>
                                     <td class="col-num"><%= contador%></td>
-                                    <td><strong><%= p.getMatricula()%></strong></td>
-                                    <td><%= p.getNombre()%> <%= p.getPaterno()%> <%= p.getMaterno() != null ? p.getMaterno() : ""%></td>
-                                    <td><%= p.getCorreo()%></td>
-                                    <td><%= p.getCedula() != null ? p.getCedula() : "—"%></td>
-                                    <td><span class="badge <%= "Activo".equals(p.getEstado()) ? "badge-success" : "badge-danger"%>"><%= p.getEstado()%></span></td>
+                                    <td><strong><%= esc(p.getMatricula())%></strong></td>
+                                    <td><%= esc(p.getNombre())%> <%= esc(p.getPaterno())%> <%= p.getMaterno() != null ? esc(p.getMaterno()) : ""%></td>
+                                    <td><%= esc(p.getCorreo())%></td>
+                                    <td><%= p.getCedula() != null ? esc(p.getCedula()) : "—"%></td>
+                                    <td><span class="badge <%= "Activo".equals(p.getEstado()) ? "badge-success" : "badge-danger"%>"><%= esc(p.getEstado())%></span></td>
                                     <td class="col-acciones">
-                                        <button class="btn btn-warning btn-sm" onclick="editarProfesor(<%= p.getIdProfesor()%>, <%= p.getIdUsuario()%>, '<%= p.getNombre()%>', '<%= p.getPaterno()%>', '<%= p.getMaterno() != null ? p.getMaterno() : ""%>', '<%= p.getCedula() != null ? p.getCedula() : ""%>', '<%= p.getCorreo()%>')" title="Editar">✏️</button>
-                                        <button class="btn btn-danger btn-sm" onclick="eliminarProfesor(<%= p.getIdUsuario()%>)" title="Eliminar">🗑️</button>
+                                        <button class="btn btn-warning btn-sm btn-editar"
+                                                data-id-profesor="<%= p.getIdProfesor()%>"
+                                                data-id-usuario="<%= p.getIdUsuario()%>"
+                                                data-nombre="<%= esc(p.getNombre())%>"
+                                                data-paterno="<%= esc(p.getPaterno())%>"
+                                                data-materno="<%= p.getMaterno() != null ? esc(p.getMaterno()) : ""%>"
+                                                data-cedula="<%= p.getCedula() != null ? esc(p.getCedula()) : ""%>"
+                                                data-correo="<%= esc(p.getCorreo())%>"
+                                                title="Editar">✏️</button>
+                                        <button class="btn btn-danger btn-sm btn-eliminar"
+                                                data-id-usuario="<%= p.getIdUsuario()%>"
+                                                title="Eliminar">🗑️</button>
                                     </td>
                                 </tr>
                                 <% } %>
@@ -97,30 +121,38 @@
                             <input type="hidden" id="idUsuario" name="idUsuario" value="">
 
                             <div class="form-group" id="grupoMatricula">
-                                <label>Matrícula</label>
-                                <input type="text" id="matricula" name="matricula" maxlength="13" required placeholder="PROF001">
+                                <label>Clave de Profesor</label>
+                                <input type="text" id="matricula" name="matricula" maxlength="13" required
+                                       placeholder="Ej: PROF001 (máx. 13 caracteres)">
+                                <small>Identificador único del profesor. Se usará también como contraseña inicial.</small>
                             </div>
                             <div class="form-group">
                                 <label>Nombre</label>
-                                <input type="text" id="nombre" name="nombre" maxlength="45" required>
+                                <input type="text" id="nombre" name="nombre" maxlength="45" required
+                                       placeholder="Ej: Juan (texto, máx. 45)">
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label>Apellido Paterno</label>
-                                    <input type="text" id="paterno" name="paterno" maxlength="45" required>
+                                    <input type="text" id="paterno" name="paterno" maxlength="45" required
+                                           placeholder="Ej: Pérez (texto, máx. 45)">
                                 </div>
                                 <div class="form-group">
                                     <label>Apellido Materno</label>
-                                    <input type="text" id="materno" name="materno" maxlength="45">
+                                    <input type="text" id="materno" name="materno" maxlength="45"
+                                           placeholder="Ej: García (opcional, texto)">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>Correo</label>
-                                <input type="email" id="correo" name="correo" maxlength="100" required>
+                                <input type="email" id="correo" name="correo" maxlength="100" required
+                                       placeholder="Ej: nombre@dominio.com (máx. 100)">
                             </div>
                             <div class="form-group">
                                 <label>Cédula profesional</label>
-                                <input type="text" id="cedula" name="cedula" maxlength="45">
+                                <input type="text" id="cedula" name="cedula" maxlength="45" pattern="[0-9]{6,45}"
+                                       placeholder="Ej: 12345678 (opcional, numérico, máx. 45)"
+                                       title="Solo números, entre 6 y 45 dígitos">
                             </div>
 
                             <div class="form-actions">
@@ -134,6 +166,26 @@
         </div>
 
         <script>
+            document.querySelectorAll('.btn-editar').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    editarProfesor(
+                        this.dataset.idProfesor,
+                        this.dataset.idUsuario,
+                        this.dataset.nombre,
+                        this.dataset.paterno,
+                        this.dataset.materno,
+                        this.dataset.cedula,
+                        this.dataset.correo
+                    );
+                });
+            });
+
+            document.querySelectorAll('.btn-eliminar').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    eliminarProfesor(this.dataset.idUsuario);
+                });
+            });
+
             function editarProfesor(idProfesor, idUsuario, nombre, paterno, materno, cedula, correo)
             {
                 document.getElementById('formTitulo').innerText = 'Editar Profesor';
@@ -146,11 +198,10 @@
                 document.getElementById('cedula').value = cedula;
                 document.getElementById('correo').value = correo;
 
-                // La matrícula no se edita aquí (pertenece al usuario ya creado)
                 document.getElementById('grupoMatricula').style.display = 'none';
                 document.getElementById('matricula').required = false;
 
-                document.getElementById('formPanel').scrollIntoView({behavior:'smooth', block:'start'});
+                document.getElementById('formPanel').scrollIntoView({behavior: 'smooth', block: 'start'});
             }
 
             function eliminarProfesor(idUsuario)

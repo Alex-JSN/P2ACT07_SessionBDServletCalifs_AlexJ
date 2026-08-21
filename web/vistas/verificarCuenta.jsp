@@ -45,7 +45,7 @@
                     </form>
 
                     <p class="auth-footer-link">
-                        ¿Ya tienes tu cuenta activa? <a href="${pageContext.request.contextPath}/loginUsuario.jsp">Inicia sesión aquí</a>
+                        ¿Ya tienes tu cuenta activa? <a href="${pageContext.request.contextPath}/vistas/loginUsuario.jsp">Inicia sesión aquí</a>
                     </p>
                 </div>
             </div>

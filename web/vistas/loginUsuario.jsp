@@ -29,14 +29,14 @@
                     <form id="formLogin" action="${pageContext.request.contextPath}/Login" method="post" novalidate>
                         <div class="form-group">
                             <label for="correo">Correo electrónico</label>
-                            <input type="email"        id="correo" name="correo" placeholder="correo@gmail.com" value="${correo}" required autocomplete="email">
+                            <input type="email"        id="correo" name="correo" placeholder="correo@gmail.com" value="${correo}" autocomplete="email" required>
                             <span  class="field-error" id="errorCorreo">Ingresa un correo válido.</span>
                         </div>
 
                         <div class="form-group">
                             <label for="contrasena">Contraseña</label>
                             <div class="password-wrapper">
-                                <input  type="password" id="contrasena" name="contrasena" placeholder="Tu contraseña" required autocomplete="current-password">
+                                <input  type="password" id="contrasena" name="contrasena" placeholder="Tu contraseña" autocomplete="current-password" required>
                                 <button type="button" class="toggle-password" data-target="contrasena" aria-label="Mostrar contraseña"></button>
                             </div>
                             <span class="field-error" id="errorContrasena">La contraseña es obligatoria.</span>
@@ -45,7 +45,7 @@
                         <button type="submit" class="btn-auth">Iniciar</button>
                     </form>
 
-                    <p class="auth-footer-link">¿No tienes cuenta? <a href="${pageContext.request.contextPath}/registroUsuario.jsp">Regístrate aquí</a></p>
+                    <p class="auth-footer-link">¿No tienes cuenta? <a href="${pageContext.request.contextPath}/vistas/registroUsuario.jsp">Regístrate aquí</a></p>
                 </div>
             </div>
         </main>

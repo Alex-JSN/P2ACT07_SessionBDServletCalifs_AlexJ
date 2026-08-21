@@ -29,7 +29,7 @@
     <body>
         <div class="app-shell">
 
-            <jsp:include page="menuAdmin.jsp"><jsp:param name="seccion" value="alumnos"/></jsp:include>
+            <jsp:include page="menuAdministrador.jsp"><jsp:param name="seccion" value="alumnos"/></jsp:include>
 
             <main class="content-area">
                 <div class="panel-header">
