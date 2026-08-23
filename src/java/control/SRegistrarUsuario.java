@@ -140,7 +140,7 @@ import java.sql.SQLException;
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
-        response.sendRedirect(request.getContextPath() + "/registroUsuario.jsp");
+        response.sendRedirect(request.getContextPath() + "/vistas/registroUsuario.jsp");
     }
 
     private void reenviarConError(HttpServletRequest request, HttpServletResponse response, String error, String matricula, String correo, String nombre, String paterno, String materno) throws ServletException, IOException
@@ -151,7 +151,7 @@ import java.sql.SQLException;
         request.setAttribute("nombre", nombre);
         request.setAttribute("paterno", paterno);
         request.setAttribute("materno", materno);
-        request.getRequestDispatcher("/registroUsuario.jsp").forward(request, response);
+        request.getRequestDispatcher("/vistas/registroUsuario.jsp").forward(request, response);
     }
 
     private boolean esVacio(String s)

@@ -44,7 +44,9 @@ public class PasswordUtil
             byte[] hashIntento = skf.generateSecret(spec).getEncoded();
 
             if (hashIntento.length != hashOriginal.length) return false;
+            
             int diff = 0;
+            
             for (int i = 0; i < hashIntento.length; i++)
             {
                 diff |= hashIntento[i] ^ hashOriginal[i];

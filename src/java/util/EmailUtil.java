@@ -12,7 +12,7 @@ import java.util.Properties;
 public class EmailUtil
 {
     private static final String CORREO_ORIGEN  = "developeruarm@gmail.com";
-    private static final String CONTRASENA_APP = "neny yieo vjel mfze";
+    private static final String CONTRASENA_APP = "wiye bexg gobu sljs";
 
     public static void enviarCorreoVerificacion(String correoDestino, String nombre, String codigo)
     {

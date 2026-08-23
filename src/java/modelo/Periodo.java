@@ -13,38 +13,47 @@ public class Periodo
     {
         return idPeriodo;
     }
+    
     public void setIdPeriodo(int idPeriodo)
     {
         this.idPeriodo = idPeriodo;
     }
+    
     public String getNombre()
     {
         return nombre;
     }
+    
     public void setNombre(String nombre)
     {
         this.nombre = nombre;
     }
+    
     public Date getFechaInicio()
     {
         return fechaInicio;
     }
+    
     public void setFechaInicio(Date fechaInicio)
     {
         this.fechaInicio = fechaInicio;
     }
+    
     public Date getFechaFin()
     {
         return fechaFin;
     }
+    
     public void setFechaFin(Date fechaFin)
     {
         this.fechaFin = fechaFin;
     }
+    
     public String getEstado()
     {
         return estado;
     }
+    
     public void setEstado(String estado)
     {
         this.estado = estado;

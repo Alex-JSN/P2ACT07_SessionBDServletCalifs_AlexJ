@@ -1,8 +1,14 @@
 package control.administrador;
 
 import modelo.Usuario;
+import modelo.Asignacion;
 import modelo.Profesor;
+import modelo.Materia;
+import modelo.Grupo;
+import dao.administrador.DAOAsignacion;
 import dao.administrador.DAOProfesor;
+import dao.administrador.DAOMateria;
+import dao.administrador.DAOGrupo;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -12,10 +18,13 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "SGestionProfesor", urlPatterns = {"/GestionProfesores"})
-public class SGestionProfesor extends HttpServlet
+@WebServlet(name = "SAsignacion", urlPatterns = {"/Asignaciones"})
+public class SAsignacion extends HttpServlet
 {
+    private DAOAsignacion daoAsignacion = new DAOAsignacion();
     private DAOProfesor daoProfesor = new DAOProfesor();
+    private DAOMateria daoMateria = new DAOMateria();
+    private DAOGrupo daoGrupo = new DAOGrupo();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
@@ -40,23 +49,23 @@ public class SGestionProfesor extends HttpServlet
         {
             if ("eliminar".equals(accion))
             {
-                int idUsuario = Integer.parseInt(request.getParameter("idUsuario"));
-                boolean ok = daoProfesor.eliminar(idUsuario);
+                int idAsigna = Integer.parseInt(request.getParameter("idAsigna"));
+                boolean ok = daoAsignacion.eliminar(idAsigna);
                 session.setAttribute(ok ? "mensaje" : "error",
-                    ok ? "Profesor eliminado exitosamente" : "No se pudo eliminar el profesor");
-                response.sendRedirect(request.getContextPath() + "/GestionProfesores");
+                    ok ? "Asignación eliminada exitosamente" : "No se pudo eliminar");
+                response.sendRedirect(request.getContextPath() + "/Asignaciones");
                 return;
             }
 
-            if ("editar".equals(accion))
-            {
-                int idProfesor = Integer.parseInt(request.getParameter("idProfesor"));
-                Profesor profesorEditar = daoProfesor.obtenerPorId(idProfesor);
-                request.setAttribute("profesorEditar", profesorEditar);
-            }
-
+            List<Asignacion> asignaciones = daoAsignacion.listar();
             List<Profesor> profesores = daoProfesor.listar();
+            List<Materia> materias = daoMateria.listar();
+            List<Grupo> grupos = daoGrupo.listar();
+
+            request.setAttribute("asignaciones", asignaciones);
             request.setAttribute("profesores", profesores);
+            request.setAttribute("materias", materias);
+            request.setAttribute("grupos", grupos);
         }
         catch (Exception e)
         {
@@ -64,7 +73,7 @@ public class SGestionProfesor extends HttpServlet
             request.setAttribute("error", "Error al procesar la solicitud: " + e.getMessage());
         }
 
-        request.getRequestDispatcher("/vistas/administrador/profesores.jsp").forward(request, response);
+        request.getRequestDispatcher("/vistas/administrador/asignaciones.jsp").forward(request, response);
     }
 
     @Override
@@ -77,32 +86,15 @@ public class SGestionProfesor extends HttpServlet
             return;
         }
 
-        String accion = request.getParameter("accion");
-
         try
         {
-            Profesor profesor = new Profesor();
-            profesor.setNombre(request.getParameter("nombre"));
-            profesor.setPaterno(request.getParameter("paterno"));
-            profesor.setMaterno(request.getParameter("materno"));
-            profesor.setCedula(request.getParameter("cedula"));
-            String correo = request.getParameter("correo");
+            int idProfesor = Integer.parseInt(request.getParameter("idProfesor"));
+            int idMateria = Integer.parseInt(request.getParameter("idMateria"));
+            int idGrupo = Integer.parseInt(request.getParameter("idGrupo"));
 
-            boolean resultado;
-            if ("actualizar".equals(accion))
-            {
-                profesor.setIdProfesor(Integer.parseInt(request.getParameter("idProfesor")));
-                profesor.setIdUsuario(Integer.parseInt(request.getParameter("idUsuario")));
-                resultado = daoProfesor.actualizar(profesor, correo);
-            }
-            else
-            {
-                String matricula = request.getParameter("matricula");
-                resultado = daoProfesor.insertar(profesor, matricula, correo);
-            }
-
+            boolean resultado = daoAsignacion.insertar(idProfesor, idMateria, idGrupo);
             session.setAttribute(resultado ? "mensaje" : "error",
-                resultado ? "Profesor guardado exitosamente" : "Error al guardar. Verifica que la matrícula/correo no estén repetidos.");
+                resultado ? "Asignación creada exitosamente" : "Error al asignar (verifica que esa materia no esté ya asignada a ese grupo)");
         }
         catch (Exception e)
         {
@@ -110,6 +102,6 @@ public class SGestionProfesor extends HttpServlet
             session.setAttribute("error", "Error: " + e.getMessage());
         }
 
-        response.sendRedirect(request.getContextPath() + "/GestionProfesores");
+        response.sendRedirect(request.getContextPath() + "/Asignaciones");
     }
 }

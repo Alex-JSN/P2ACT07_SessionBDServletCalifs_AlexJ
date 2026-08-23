@@ -13,7 +13,8 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 
-@WebServlet(name = "VerificarCuenta", urlPatterns = {"/VerificarCuenta"}) public class SVerificarCuenta extends HttpServlet
+@WebServlet(name = "VerificarCuenta", urlPatterns = {"/VerificarCuenta"})
+public class SVerificarCuenta extends HttpServlet
 {
     private final DAOUsuario daoUsuario = new DAOUsuario();
 
@@ -25,12 +26,12 @@ import java.sql.SQLException;
         String correo = obtenerCorreoSesion(request);
         if (correo == null)
         {
-            response.sendRedirect(request.getContextPath() + "/registroUsuario.jsp");
+            response.sendRedirect(request.getContextPath() + "/vistas/registroUsuario.jsp");
             return;
         }
 
         request.setAttribute("correo", correo);
-        request.getRequestDispatcher("/verificarCuenta.jsp").forward(request, response);
+        request.getRequestDispatcher("/vistas/verificarCuenta.jsp").forward(request, response);
     }
 
     @Override
@@ -42,7 +43,7 @@ import java.sql.SQLException;
         String correo = obtenerCorreoSesion(request);
         if (correo == null)
         {
-            response.sendRedirect(request.getContextPath() + "/registroUsuario.jsp");
+            response.sendRedirect(request.getContextPath() + "/vistas/registroUsuario.jsp");
             return;
         }
 
@@ -60,7 +61,7 @@ import java.sql.SQLException;
         {
             request.setAttribute("error", "Ingresa el código que enviamos a tu correo.");
             request.setAttribute("correo", correo);
-            request.getRequestDispatcher("/verificarCuenta.jsp").forward(request, response);
+            request.getRequestDispatcher("/vistas/verificarCuenta.jsp").forward(request, response);
             return;
         }
 
@@ -73,17 +74,17 @@ import java.sql.SQLException;
                 case EXITO:
                     HttpSession session = request.getSession(true);
                     session.removeAttribute("correoPendienteVerificacion");
-                    response.sendRedirect(request.getContextPath() + "/loginUsuario.jsp?registro=ok");
+                    response.sendRedirect(request.getContextPath() + "/vistas/loginUsuario.jsp?registro=ok");
                     break;
 
                 case YA_ACTIVA:
-                    response.sendRedirect(request.getContextPath() + "/loginUsuario.jsp");
+                    response.sendRedirect(request.getContextPath() + "/vistas/loginUsuario.jsp");
                     break;
 
                 case CODIGO_EXPIRADO:
                     request.setAttribute("error", "El código expiró. Solicita uno nuevo.");
                     request.setAttribute("correo", correo);
-                    request.getRequestDispatcher("/verificarCuenta.jsp").forward(request, response);
+                    request.getRequestDispatcher("/vistas/verificarCuenta.jsp").forward(request, response);
                     break;
 
                 case CODIGO_INCORRECTO:
@@ -91,7 +92,7 @@ import java.sql.SQLException;
                 default:
                     request.setAttribute("error", "El código ingresado no es correcto.");
                     request.setAttribute("correo", correo);
-                    request.getRequestDispatcher("/verificarCuenta.jsp").forward(request, response);
+                    request.getRequestDispatcher("/vistas/verificarCuenta.jsp").forward(request, response);
             }
 
         }
@@ -100,7 +101,7 @@ import java.sql.SQLException;
             e.printStackTrace();
             request.setAttribute("error", "Ocurrió un error al verificar tu cuenta. Intenta más tarde.");
             request.setAttribute("correo", correo);
-            request.getRequestDispatcher("/verificarCuenta.jsp").forward(request, response);
+            request.getRequestDispatcher("/vistas/verificarCuenta.jsp").forward(request, response);
         }
     }
 
@@ -136,7 +137,7 @@ import java.sql.SQLException;
         }
 
         request.setAttribute("correo", correo);
-        request.getRequestDispatcher("/verificarCuenta.jsp").forward(request, response);
+        request.getRequestDispatcher("/vistas/verificarCuenta.jsp").forward(request, response);
     }
 
     private String obtenerCorreoSesion(HttpServletRequest request)

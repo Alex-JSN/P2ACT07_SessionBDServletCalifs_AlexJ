@@ -1,5 +1,4 @@
 package control.profesor;
-
 import modelo.Usuario;
 import modelo.Calificacion;
 import modelo.Materia;
@@ -12,12 +11,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
-
 @WebServlet(name = "SPanelProfesor", urlPatterns = {"/PanelProfesor"})
 public class SPanelProfesor extends HttpServlet
 {
     private DAOProfesor daoProfesor = new DAOProfesor();
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
@@ -27,18 +24,15 @@ public class SPanelProfesor extends HttpServlet
             response.sendRedirect(request.getContextPath() + "/loginUsuario.jsp");
             return;
         }
-
         Usuario usuarioActual = (Usuario) session.getAttribute("usuario");
         if (!"Profesor".equals(usuarioActual.getTipoUsuario()))
         {
             response.sendRedirect(request.getContextPath() + "/loginUsuario.jsp");
             return;
         }
-
         try
         {
             Integer idUsuario = usuarioActual.getIdUsuario();
-
             // TODO: DAOProfesor necesita resolver IdUsuario -> IdProfesor
             // (tabla profesores.IdUsuario) antes de poder buscar en "asigna".
             //
@@ -47,10 +41,8 @@ public class SPanelProfesor extends HttpServlet
             //       -> JOIN asigna (por IdProfesor) -> grupos -> alumnos -> usuarios
             //   Map<Integer,String> obtenerMateriasQueImparte(int idUsuario)
             //       -> JOIN asigna (por IdProfesor) -> materias
-
 //            List<Usuario> misAlumnos = DAOProfesor.obtenerAlumnosPorProfesor(idUsuario);
 //            List<Materia> misMaterias = DAOProfesor.obtenerMateriasQueImparte(idUsuario);
-
 //            request.setAttribute("misAlumnos", misAlumnos);
 //            request.setAttribute("misMaterias", misMaterias);
         }
@@ -59,10 +51,8 @@ public class SPanelProfesor extends HttpServlet
             e.printStackTrace();
             request.setAttribute("error", "Error al cargar tus alumnos: " + e.getMessage());
         }
-
-        request.getRequestDispatcher("/WEB-INF/vistas/profesor/panelProfesor.jsp").forward(request, response);
+        request.getRequestDispatcher("/vistas/profesor/panelProfesor.jsp").forward(request, response);
     }
-
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
@@ -72,9 +62,7 @@ public class SPanelProfesor extends HttpServlet
             response.sendRedirect(request.getContextPath() + "/loginUsuario.jsp");
             return;
         }
-
         String accion = request.getParameter("accion");
-
         try
         {
             if ("guardarCalificacion".equals(accion))
@@ -94,7 +82,6 @@ public class SPanelProfesor extends HttpServlet
             e.printStackTrace();
             session.setAttribute("error", "❌ Error: " + e.getMessage());
         }
-
         response.sendRedirect(request.getContextPath() + "/PanelProfesor");
     }
 }

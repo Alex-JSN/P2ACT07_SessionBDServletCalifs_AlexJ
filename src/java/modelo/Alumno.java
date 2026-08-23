@@ -2,7 +2,6 @@ package modelo;
 
 public class Alumno
 {
-
     private int idAlumno;
     private String matricula;
     private String nombre;
