@@ -28,14 +28,14 @@ import java.util.List;
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("usuario") == null)
         {
-            response.sendRedirect(request.getContextPath() + "/loginUsuario.jsp");
+            response.sendRedirect(request.getContextPath() + "/vistas/loginUsuario.jsp");
             return;
         }
 
         Usuario usuarioActual = (Usuario) session.getAttribute("usuario");
         if (!"Administrador".equals(usuarioActual.getTipoUsuario()))
         {
-            response.sendRedirect(request.getContextPath() + "/loginUsuario.jsp");
+            response.sendRedirect(request.getContextPath() + "/vistas/loginUsuario.jsp");
             return;
         }
 
@@ -80,7 +80,7 @@ import java.util.List;
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("usuario") == null)
         {
-            response.sendRedirect(request.getContextPath() + "/loginUsuario.jsp");
+            response.sendRedirect(request.getContextPath() + "/vistas/loginUsuario.jsp");
             return;
         }
 

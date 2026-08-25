@@ -21,13 +21,13 @@ public class SPanelProfesor extends HttpServlet
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("usuario") == null)
         {
-            response.sendRedirect(request.getContextPath() + "/loginUsuario.jsp");
+            response.sendRedirect(request.getContextPath() + "/vistas/loginUsuario.jsp");
             return;
         }
         Usuario usuarioActual = (Usuario) session.getAttribute("usuario");
         if (!"Profesor".equals(usuarioActual.getTipoUsuario()))
         {
-            response.sendRedirect(request.getContextPath() + "/loginUsuario.jsp");
+            response.sendRedirect(request.getContextPath() + "/vistas/loginUsuario.jsp");
             return;
         }
         try
@@ -59,7 +59,7 @@ public class SPanelProfesor extends HttpServlet
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("usuario") == null)
         {
-            response.sendRedirect(request.getContextPath() + "/loginUsuario.jsp");
+            response.sendRedirect(request.getContextPath() + "/vistas/loginUsuario.jsp");
             return;
         }
         String accion = request.getParameter("accion");

@@ -125,21 +125,21 @@
                             </div>
                             <div class="form-group">
                                 <label>Nombre</label>
-                                <input type="text" id="nombre" name="nombre" maxlength="45" required>
+                                <input type="text" id="nombre" name="nombre" maxlength="45" placeholder="Ej: Chanchito Feliz" required>
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label>Apellido Paterno</label>
-                                    <input type="text" id="paterno" name="paterno" maxlength="45" required>
+                                    <input type="text" id="paterno" name="paterno" maxlength="45" placeholder="Ej: Santos" required>
                                 </div>
                                 <div class="form-group">
                                     <label>Apellido Materno</label>
-                                    <input type="text" id="materno" name="materno" maxlength="45">
+                                    <input type="text" id="materno" name="materno" maxlength="45" placeholder="Ej: Nava">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>Correo</label>
-                                <input type="email" id="correo" name="correo" maxlength="100" required>
+                                <input type="email" id="correo" name="correo" maxlength="100" placeholder="Ej: 57231900100_i@utrng.edu.mx" required>
                             </div>
                             <div class="form-group">
                                 <label>Carrera</label>

@@ -2,7 +2,10 @@
 <%@page import="modelo.Usuario"%>
 <%
     Usuario usuarioActual = (Usuario) session.getAttribute("usuario");
-    if (usuarioActual == null) { return; }
+    if (usuarioActual == null) {
+        response.sendRedirect(request.getContextPath() + "/vistas/loginUsuario.jsp");
+        return;
+    }
 %>
 <aside class="sidebar">
     <div class="sidebar-brand">
@@ -22,11 +25,40 @@
     </div>
 
     <ul class="sidebar-nav">
-        <li class="active"><a href="#seccionCalificaciones"><span class="icon">📊</span> Mis calificaciones</a></li>
-        <li><a href="#seccionSeguridad"><span class="icon">🔒</span> Cambiar contraseña</a></li>
+        <li class="active">
+            <a href="${pageContext.request.contextPath}/PanelAlumno">
+                <span class="icon">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/>
+                        <path d="m9.5 15.5 2 2 4-4.5"/>
+                    </svg>
+                </span>
+                Mis calificaciones
+            </a>
+        </li>
+        <li>
+            <a href="${pageContext.request.contextPath}/vistas/cambiarContrasena.jsp">
+                <span class="icon">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </span>
+                Cambiar contraseña
+            </a>
+        </li>
     </ul>
 
     <div class="sidebar-footer">
-        <a href="${pageContext.request.contextPath}/Logout" class="btn-logout">⎋ Cerrar sesión</a>
+        <a href="${pageContext.request.contextPath}/Logout" class="btn-logout">
+            <span class="icon">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+            </span>
+            Cerrar sesión
+        </a>
     </div>
 </aside>

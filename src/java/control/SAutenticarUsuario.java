@@ -11,7 +11,8 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 
-@WebServlet(name = "SAutenticarUsuario", urlPatterns = {"/Login"}) public class SAutenticarUsuario extends HttpServlet
+@WebServlet(name = "SAutenticarUsuario", urlPatterns = {"/Login"})
+public class SAutenticarUsuario extends HttpServlet
 {
     private final DAOUsuario daoUsuario = new DAOUsuario();
 
@@ -28,7 +29,7 @@ import java.sql.SQLException;
         {
             request.setAttribute("error", "Ingresa tu correo y tu contraseña.");
             request.setAttribute("correo", correo);
-            request.getRequestDispatcher("/loginUsuario.jsp").forward(request, response);
+            request.getRequestDispatcher("/vistas/loginUsuario.jsp").forward(request, response);  // ✅ CORREGIDO
             return;
         }
 
@@ -41,7 +42,6 @@ import java.sql.SQLException;
             session.setAttribute("tipoUsuario", usuario.getTipoUsuario());
             session.setMaxInactiveInterval(30 * 60); // 30 min
 
-            // TipoUsuario: 'Administrador', 'Profesor' o 'Alumno' (enum de la tabla usuarios)
             switch (usuario.getTipoUsuario())
             {
                 case "Administrador":
@@ -54,18 +54,15 @@ import java.sql.SQLException;
                     response.sendRedirect(request.getContextPath() + "/PanelAlumno");
                     break;
                 default:
-                    // Caso defensivo: un TipoUsuario no contemplado no debería
-                    // llegar aquí si el enum de la BD está bien definido,
-                    // pero evita mandar a alguien a un panel equivocado.
                     request.setAttribute("error", "Tipo de usuario no reconocido.");
-                    request.getRequestDispatcher("/loginUsuario.jsp").forward(request, response);
+                    request.getRequestDispatcher("/vistas/loginUsuario.jsp").forward(request, response);  // ✅ CORREGIDO
             }
         }
         catch (DAOUsuario.CredencialesInvalidasException e)
         {
             request.setAttribute("error", e.getMessage());
             request.setAttribute("correo", correo);
-            request.getRequestDispatcher("/loginUsuario.jsp").forward(request, response);
+            request.getRequestDispatcher("/vistas/loginUsuario.jsp").forward(request, response);  // ✅ CORREGIDO
         }
         catch (DAOUsuario.CuentaInactivaException e)
         {
@@ -77,21 +74,21 @@ import java.sql.SQLException;
         {
             request.setAttribute("error", e.getMessage());
             request.setAttribute("correo", correo);
-            request.getRequestDispatcher("/loginUsuario.jsp").forward(request, response);
+            request.getRequestDispatcher("/vistas/loginUsuario.jsp").forward(request, response);  // ✅ CORREGIDO
         }
         catch (SQLException e)
         {
             e.printStackTrace();
             request.setAttribute("error", "Ocurrió un error al iniciar sesión. Intenta más tarde.");
             request.setAttribute("correo", correo);
-            request.getRequestDispatcher("/loginUsuario.jsp").forward(request, response);
+            request.getRequestDispatcher("/vistas/loginUsuario.jsp").forward(request, response);  // ✅ CORREGIDO
         }
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
-        response.sendRedirect(request.getContextPath() + "/loginUsuario.jsp");
+        response.sendRedirect(request.getContextPath() + "/vistas/loginUsuario.jsp");  // ✅ CORREGIDO
     }
 
     private boolean esVacio(String s)

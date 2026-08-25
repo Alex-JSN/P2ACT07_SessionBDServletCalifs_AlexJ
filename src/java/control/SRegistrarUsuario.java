@@ -14,7 +14,8 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 
-@WebServlet(name = "SRegistrarUsuario", urlPatterns = {"/Registro"}) public class SRegistrarUsuario extends HttpServlet
+@WebServlet(name = "SRegistrarUsuario", urlPatterns = {"/Registro"})
+public class SRegistrarUsuario extends HttpServlet
 {
     private final DAOUsuario daoUsuario = new DAOUsuario();
 
@@ -31,10 +32,6 @@ import java.sql.SQLException;
         String materno      = request.getParameter("materno");
         String contrasena   = request.getParameter("contrasena");
         String confirmarContrasena = request.getParameter("confirmarContrasena");
-
-        System.out.println("=== REGISTRO RECIBIDO ===");
-        System.out.println("Correo: " + correo);
-        System.out.println("Nombre: " + nombre);
 
         if (esVacio(correo) || esVacio(nombre) || esVacio(paterno) || esVacio(contrasena))
         {
@@ -87,13 +84,11 @@ import java.sql.SQLException;
         {
             usuario.setMatricula(null);
             usuario.setTipoUsuario("Administrador");
-            System.out.println("PRIMER USUARIO - Será Administrador");
         }
 
         try
         {
             String codigo = daoUsuario.registrar(usuario);
-
             HttpSession session = request.getSession(true);
 
             if (codigo != null)
@@ -110,7 +105,6 @@ import java.sql.SQLException;
                 session.setAttribute("correoPendienteVerificacion", usuario.getCorreo());
                 session.setAttribute("mensajeExito", "Cuenta creada. Revisa tu correo para activarla.");
                 response.sendRedirect(request.getContextPath() + "/VerificarCuenta");
-
             }
             else
             {
@@ -123,7 +117,8 @@ import java.sql.SQLException;
                     session.setAttribute("mensajeExito", "¡Cuenta activada exitosamente! Ahora puedes iniciar sesión.");
                 }
 
-                response.sendRedirect(request.getContextPath() + "/SLogin?vista=login");
+                // ✅ CORREGIDO: Redirige directamente a login
+                response.sendRedirect(request.getContextPath() + "/vistas/loginUsuario.jsp");
             }
 
         } catch (DAOUsuario.CorreoDuplicadoException | DAOUsuario.MatriculaDuplicadaException | DAOUsuario.AlumnoNoEncontradoException e)

@@ -6,13 +6,14 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
 import java.io.IOException;
 
-@WebServlet(name = "SLogout", urlPatterns = {"/Logout"}) public class SLogout extends HttpServlet
+@WebServlet(name = "SLogout", urlPatterns = {"/Logout"})
+public class SLogout extends HttpServlet
 {
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException
     {
         HttpSession session = request.getSession(false);
         
@@ -20,11 +21,14 @@ import java.io.IOException;
         {
             session.invalidate();
         }
-        response.sendRedirect(request.getContextPath() + "/index.jsp");
+        
+        // Redirige a la página de login dentro de vistas/
+        response.sendRedirect(request.getContextPath() + "/vistas/loginUsuario.jsp");
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException
     {
         doGet(request, response);
     }
@@ -32,6 +36,6 @@ import java.io.IOException;
     @Override
     public String getServletInfo()
     {
-        return "Servlet cerrar session";
+        return "Servlet cerrar sesión";
     }
 }
