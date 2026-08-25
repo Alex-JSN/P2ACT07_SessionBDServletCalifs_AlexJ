@@ -14,7 +14,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "SMateria", urlPatterns = {"/Materias"})
+@WebServlet(name = "SGestionMateria", urlPatterns = {"/Materias"})
 public class SGestionMateria extends HttpServlet
 {
     private DAOMateria daoMateria = new DAOMateria();

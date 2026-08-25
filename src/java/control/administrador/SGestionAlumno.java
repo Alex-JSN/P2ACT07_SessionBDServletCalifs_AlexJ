@@ -1,12 +1,12 @@
 package control.administrador;
 
 import modelo.Usuario;
-import modelo.Grupo;
+import modelo.Alumno;
 import modelo.Carrera;
-import modelo.Periodo;
-import dao.administrador.DAOGrupo;
+import modelo.Calificacion;
+import dao.administrador.DAOAlumno;
 import dao.administrador.DAOCarrera;
-import dao.administrador.DAOPeriodo;
+import dao.administrador.DAOAdministrador;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,12 +16,11 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "SGestionGrupo", urlPatterns = {"/Grupos"})
-public class SGestionGrupo extends HttpServlet
+@WebServlet(name = "SGestionAlumno", urlPatterns = {"/Alumnos"}) public class SGestionAlumno extends HttpServlet
 {
-    private DAOGrupo daoGrupo = new DAOGrupo();
+    private DAOAlumno daoAlumno = new DAOAlumno();
     private DAOCarrera daoCarrera = new DAOCarrera();
-    private DAOPeriodo daoPeriodo = new DAOPeriodo();
+    private DAOAdministrador daoAdmin = new DAOAdministrador();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
@@ -41,33 +40,30 @@ public class SGestionGrupo extends HttpServlet
         }
 
         String accion = request.getParameter("accion");
+        String matricula = request.getParameter("matricula");
 
         try
         {
-            if ("eliminar".equals(accion))
+            if ("eliminar".equals(accion) && matricula != null)
             {
-                int idGrupo = Integer.parseInt(request.getParameter("idGrupo"));
-                boolean ok = daoGrupo.eliminar(idGrupo);
+                boolean ok = daoAlumno.eliminarPorMatricula(matricula);
                 session.setAttribute(ok ? "mensaje" : "error",
-                    ok ? "Grupo eliminado exitosamente" : "No se pudo eliminar el grupo");
-                response.sendRedirect(request.getContextPath() + "/Grupos");
+                    ok ? "Alumno eliminado exitosamente" : "No se pudo eliminar el alumno");
+                response.sendRedirect(request.getContextPath() + "/Alumnos");
                 return;
             }
 
-            if ("editar".equals(accion))
+            List<Alumno> alumnos = daoAlumno.listar();
+            List<Carrera> carreras = daoCarrera.listar();
+
+            for (Alumno a : alumnos)
             {
-                int idGrupo = Integer.parseInt(request.getParameter("idGrupo"));
-                Grupo grupoEditar = daoGrupo.obtenerPorId(idGrupo);
-                request.setAttribute("grupoEditar", grupoEditar);
+                List<Calificacion> califs = daoAdmin.obtenerCalificacionesPorMatricula(a.getMatricula());
+                request.setAttribute("califs_" + a.getMatricula(), califs);
             }
 
-            List<Grupo> grupos = daoGrupo.listar();
-            List<Carrera> carreras = daoCarrera.listar();
-            List<Periodo> periodos = daoPeriodo.listar();
-
-            request.setAttribute("grupos", grupos);
+            request.setAttribute("alumnos", alumnos);
             request.setAttribute("carreras", carreras);
-            request.setAttribute("periodos", periodos);
         }
         catch (Exception e)
         {
@@ -75,7 +71,7 @@ public class SGestionGrupo extends HttpServlet
             request.setAttribute("error", "Error al procesar la solicitud: " + e.getMessage());
         }
 
-        request.getRequestDispatcher("/vistas/administrador/grupos.jsp").forward(request, response);
+        request.getRequestDispatcher("/vistas/administrador/alumnos.jsp").forward(request, response);
     }
 
     @Override
@@ -92,26 +88,27 @@ public class SGestionGrupo extends HttpServlet
 
         try
         {
-            Grupo grupo = new Grupo();
-            grupo.setGeneracion(request.getParameter("generacion"));
-            grupo.setCuatrimestre(Integer.parseInt(request.getParameter("cuatrimestre")));
-            grupo.setLetra(request.getParameter("letra"));
-            grupo.setIdCarrera(Integer.parseInt(request.getParameter("idCarrera")));
-            grupo.setIdPeriodo(Integer.parseInt(request.getParameter("idPeriodo")));
+            Alumno alumno = new Alumno();
+            alumno.setMatricula(request.getParameter("matriculaNueva"));
+            alumno.setNombre(request.getParameter("nombre"));
+            alumno.setPaterno(request.getParameter("paterno"));
+            alumno.setMaterno(request.getParameter("materno"));
+            alumno.setCorreo(request.getParameter("correo"));
+            alumno.setIdCarrera(Integer.parseInt(request.getParameter("idCarrera")));
 
             boolean resultado;
-            if ("actualizar".equals(accion))
+            if ("actualizarAlumno".equals(accion))
             {
-                grupo.setIdGrupo(Integer.parseInt(request.getParameter("idGrupo")));
-                resultado = daoGrupo.actualizar(grupo);
+                alumno.setIdAlumno(Integer.parseInt(request.getParameter("idAlumno")));
+                resultado = daoAlumno.actualizar(alumno);
             }
             else
             {
-                resultado = daoGrupo.insertar(grupo);
+                resultado = daoAlumno.insertar(alumno);
             }
 
             session.setAttribute(resultado ? "mensaje" : "error",
-                resultado ? "Grupo guardado exitosamente" : "Error al guardar. Verifica que no exista ya ese grupo (misma generación, cuatrimestre, letra, carrera y periodo).");
+                resultado ? "Alumno guardado exitosamente" : "Error al guardar. Verifica que la matrícula/correo no estén repetidos.");
         }
         catch (Exception e)
         {
@@ -119,6 +116,6 @@ public class SGestionGrupo extends HttpServlet
             session.setAttribute("error", "Error: " + e.getMessage());
         }
 
-        response.sendRedirect(request.getContextPath() + "/Grupos");
+        response.sendRedirect(request.getContextPath() + "/Alumnos");
     }
 }

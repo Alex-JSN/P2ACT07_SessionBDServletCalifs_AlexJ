@@ -1,9 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="modelo.Usuario, modelo.Materia, modelo.Carrera, java.util.*"%>
 <%!
-    // Escapa caracteres especiales de HTML/atributos para evitar XSS.
-    // Usalo siempre que insertes datos de usuario o BD dentro de una expresion de salida,
-    // ya sea en el cuerpo del HTML o dentro de un atributo (value="...", data-x="...").
     private String esc(String s) {
         if (s == null) return "";
         return s.replace("&", "&amp;")
@@ -138,12 +135,12 @@
                             <div class="form-group">
                                 <label>Nombre de la materia</label>
                                 <input type="text" id="materiaNombre" name="materia" maxlength="255" required
-                                       placeholder="Ej: Programación Web (texto, máx. 255)">
+                                       placeholder="Ej: Programación Orientada a Objetos">
                             </div>
                             <div class="form-group">
                                 <label>Cuatrimestre</label>
                                 <input type="number" id="cuatrimestre" name="cuatrimestre" min="1" max="20" required
-                                       placeholder="Ej: 3 (entero, entre 1 y 20)">
+                                       placeholder="Ej: 3">
                             </div>
                             <div class="form-group">
                                 <label>Carrera</label>

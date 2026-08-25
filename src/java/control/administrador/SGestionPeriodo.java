@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.sql.Date;
 import java.util.List;
 
-@WebServlet(name = "SPeriodo", urlPatterns = {"/Periodos"})
+@WebServlet(name = "SGestionPeriodo", urlPatterns = {"/Periodos"})
 public class SGestionPeriodo extends HttpServlet
 {
     private DAOPeriodo daoPeriodo = new DAOPeriodo();

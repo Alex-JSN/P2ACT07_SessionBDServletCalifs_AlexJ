@@ -129,7 +129,7 @@
                             <div class="form-group">
                                 <label>Nombre</label>
                                 <input type="text" id="nombre" name="nombre" maxlength="45" required
-                                       placeholder="Ej: 2026-1 (texto, máx. 45)">
+                                       placeholder="Ej: 2026-02-11">
                             </div>
                             <div class="form-row">
                                 <div class="form-group">

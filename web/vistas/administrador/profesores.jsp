@@ -123,35 +123,35 @@
                             <div class="form-group" id="grupoMatricula">
                                 <label>Clave de Profesor</label>
                                 <input type="text" id="matricula" name="matricula" maxlength="13" required
-                                       placeholder="Ej: PROF001 (máx. 13 caracteres)">
+                                       placeholder="Ej: PROF001">
                                 <small>Identificador único del profesor. Se usará también como contraseña inicial.</small>
                             </div>
                             <div class="form-group">
                                 <label>Nombre</label>
                                 <input type="text" id="nombre" name="nombre" maxlength="45" required
-                                       placeholder="Ej: Juan (texto, máx. 45)">
+                                       placeholder="Ej: Alex Javier">
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label>Apellido Paterno</label>
                                     <input type="text" id="paterno" name="paterno" maxlength="45" required
-                                           placeholder="Ej: Pérez (texto, máx. 45)">
+                                           placeholder="Ej: Santos">
                                 </div>
                                 <div class="form-group">
                                     <label>Apellido Materno</label>
                                     <input type="text" id="materno" name="materno" maxlength="45"
-                                           placeholder="Ej: García (opcional, texto)">
+                                           placeholder="Ej: Nava opcional">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>Correo</label>
                                 <input type="email" id="correo" name="correo" maxlength="100" required
-                                       placeholder="Ej: nombre@dominio.com (máx. 100)">
+                                       placeholder="Ej: chanchito@dominio.com (máx. 100)">
                             </div>
                             <div class="form-group">
                                 <label>Cédula profesional</label>
                                 <input type="text" id="cedula" name="cedula" maxlength="45" pattern="[0-9]{6,45}"
-                                       placeholder="Ej: 12345678 (opcional, numérico, máx. 45)"
+                                       placeholder="Ej: 12345678"
                                        title="Solo números, entre 6 y 45 dígitos">
                             </div>
 

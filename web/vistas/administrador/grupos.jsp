@@ -144,18 +144,18 @@
                             <div class="form-group">
                                 <label>Generación</label>
                                 <input type="text" id="generacion" name="generacion" maxlength="45" required
-                                       placeholder="Ej: 2024-2027 (texto, máx. 45)">
+                                       placeholder="Ej: 2024-2027">
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label>Cuatrimestre</label>
                                     <input type="number" id="cuatrimestre" name="cuatrimestre" min="1" max="20" required
-                                           placeholder="Ej: 3 (entero, 1-20)">
+                                           placeholder="Ej: 3">
                                 </div>
                                 <div class="form-group">
                                     <label>Letra</label>
                                     <input type="text" id="letra" name="letra" maxlength="1" required
-                                           placeholder="Ej: A (1 solo carácter)">
+                                           placeholder="Ej: A">
                                 </div>
                             </div>
                             <div class="form-group">

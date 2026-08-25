@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "SCarrera", urlPatterns = {"/Carreras"}) public class SGestionCarrera extends HttpServlet
+@WebServlet(name = "SGestionCarrera", urlPatterns = {"/Carreras"}) public class SGestionCarrera extends HttpServlet
 {
     private DAOCarrera daoCarrera = new DAOCarrera();
 
