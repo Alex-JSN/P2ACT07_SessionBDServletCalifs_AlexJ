@@ -1,21 +1,33 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="modelo.Usuario, java.util.*"%>
+<%!
+    private String esc(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&#39;");
+    }
+%>
 <%
     Usuario usuarioActual = (Usuario) session.getAttribute("usuario");
-
-    if (usuarioActual == null || !"Profesor".equals(usuarioActual.getTipoUsuario()))
-    {
-        response.sendRedirect(request.getContextPath() + "/vistas/loginUsuario.jsp");
+    if (usuarioActual == null || !"Profesor".equals(usuarioActual.getTipoUsuario())) {
+        response.sendRedirect(request.getContextPath() + "/loginUsuario.jsp");
         return;
     }
 
-    List<Usuario> misAlumnos = (List<Usuario>) request.getAttribute("misAlumnos");
-    Map<Integer, String> misMaterias = (Map<Integer, String>) request.getAttribute("misMaterias");
+    List<Object[]> asignaciones = (List<Object[]>) request.getAttribute("asignaciones");
+    List<Object[]> alumnosCalificar = (List<Object[]>) request.getAttribute("alumnosCalificar");
+    Integer idAsignaSeleccionado = (Integer) request.getAttribute("idAsignaSeleccionado");
 
     String mensaje = (String) session.getAttribute("mensaje");
     String error = (String) session.getAttribute("error");
-    if (mensaje != null) { session.removeAttribute("mensaje"); }
-    if (error != null) { session.removeAttribute("error"); }
+    if (mensaje != null) {
+        session.removeAttribute("mensaje");
+    }
+    if (error != null) {
+        session.removeAttribute("error");
+    }
+    String errorCarga = (String) request.getAttribute("error");
 %>
 <!DOCTYPE html>
 <html>
@@ -27,200 +39,111 @@
     <body>
         <div class="app-shell">
 
-            <jsp:include page="menuProfesor.jsp"/>
+            <jsp:include page="menuProfesor.jsp"><jsp:param name="seccion" value="calificaciones"/></jsp:include>
 
-            <main class="content-area">
-                <div class="panel-header">
-                    <div class="left">
-                        <h1>Mis alumnos</h1>
-                        <span class="welcome-text">Bienvenido, <%= usuarioActual.getNombre()%></span>
+                <main class="content-area">
+                    <div class="panel-header">
+                        <div class="left">
+                            <h1>Mis Materias</h1>
+                            <span class="welcome-text">Bienvenido, <%= esc(usuarioActual.getNombre())%></span>
                     </div>
                 </div>
 
-                <% if (mensaje != null) { %><div class="alert alert-success"><%= mensaje%></div><% } %>
-                <% if (error != null) { %><div class="alert alert-error"><%= error%></div><% } %>
+                <% if (mensaje != null) {%><div class="alert alert-success"><%= esc(mensaje)%></div><% } %>
+                <% if (error != null) {%><div class="alert alert-error"><%= esc(error)%></div><% } %>
+                <% if (errorCarga != null) {%><div class="alert alert-error"><%= esc(errorCarga)%></div><% } %>
+
+                <% if (asignaciones == null || asignaciones.isEmpty()) { %>
+                <div class="alert alert-error">
+                    Aún no tienes materias asignadas. Contacta al administrador para que te asigne un grupo.
+                </div>
+                <% } else {%>
 
                 <div class="title-section">
                     <div class="left">
-                        <h2>Alumnos asignados</h2>
-                        <span>Total: <%= (misAlumnos != null) ? misAlumnos.size() : 0%> alumnos</span>
+                        <h2>Materias que impartes</h2>
+                        <span>Total: <%= asignaciones.size()%></span>
                     </div>
                 </div>
 
-                <div class="main-content">
+                <div class="main-content" style="grid-template-columns: 320px 1fr;">
+                    <div class="table-container" style="padding:8px;">
+                        <% for (Object[] a : asignaciones) {
+                                int idAsigna = (int) a[0];
+                                String nombreMateria = (String) a[1];
+                                String nombreGrupo = (String) a[2];
+                                String nombrePeriodo = (String) a[3];
+                                boolean seleccionado = idAsignaSeleccionado != null && idAsignaSeleccionado == idAsigna;
+                        %>
+                        <a href="${pageContext.request.contextPath}/PanelProfesor?idAsigna=<%= idAsigna%>"
+                           style="display:block; padding:12px 14px; margin-bottom:8px; border-radius:10px; text-decoration:none;
+                           border:1px solid var(--border); <%= seleccionado ? "background:#EEF0FE; border-color:var(--steel-light);" : "background:var(--white);"%>">
+                            <strong style="display:block; color:var(--navy); font-size:13.5px;"><%= esc(nombreMateria)%></strong>
+                            <span style="display:block; font-size:12px; color:var(--ink-soft);"><%= esc(nombreGrupo)%> · <%= esc(nombrePeriodo)%></span>
+                        </a>
+                        <% } %>
+                    </div>
+
                     <div class="table-container">
-                        <% if (misAlumnos == null || misAlumnos.isEmpty()) { %>
+                        <% if (idAsignaSeleccionado == null) { %>
                         <div style="text-align:center; padding:40px; color:#718096;">
-                            <p style="font-size:14px;">No tienes alumnos asignados todavía</p>
+                            <p style="font-size:14px;">Selecciona una materia de la izquierda para capturar calificaciones.</p>
+                        </div>
+                        <% } else if (alumnosCalificar == null || alumnosCalificar.isEmpty()) { %>
+                        <div style="text-align:center; padding:40px; color:#718096;">
+                            <p style="font-size:14px;">No hay alumnos inscritos en este grupo para el periodo correspondiente.</p>
                         </div>
                         <% } else { %>
                         <table class="data-table">
                             <thead>
                                 <tr>
                                     <th class="col-num">#</th>
-                                    <th class="col-matricula">Matrícula</th>
-                                    <th class="col-nombre">Nombre completo</th>
-                                    <th class="col-correo">Correo</th>
-                                    <th class="col-acciones">Acción</th>
+                                    <th>Matrícula</th>
+                                    <th>Alumno</th>
+                                    <th style="width:70px;">P1</th>
+                                    <th style="width:70px;">P2</th>
+                                    <th style="width:70px;">P3</th>
+                                    <th class="col-acciones">Guardar</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <%
                                     int contador = 0;
-                                    for (Usuario alumno : misAlumnos)
-                                    {
+                                    for (Object[] al : alumnosCalificar) {
                                         contador++;
+                                        int idInscripcion = (int) al[0];
+                                        String matricula = (String) al[1];
+                                        String nombreCompleto = (String) al[2];
+                                        Double p1 = (Double) al[3];
+                                        Double p2 = (Double) al[4];
+                                        Double p3 = (Double) al[5];
+                                        String formId = "formCalif" + idInscripcion;
                                 %>
-                                <tr onclick="seleccionarAlumno('<%= alumno.getMatricula()%>', '<%= alumno.getNombre()%> <%= alumno.getPaterno()%>')" style="cursor:pointer;">
+                                <tr>
                                     <td class="col-num"><%= contador%></td>
-                                    <td class="col-matricula"><strong><%= alumno.getMatricula()%></strong></td>
-                                    <td class="col-nombre"><%= alumno.getNombre()%> <%= alumno.getPaterno()%> <%= alumno.getMaterno() != null ? alumno.getMaterno() : ""%></td>
-                                    <td class="col-correo"><%= alumno.getCorreo()%></td>
-                                    <td class="col-acciones"><button type="button" class="btn btn-primary btn-sm" onclick="seleccionarAlumno('<%= alumno.getMatricula()%>', '<%= alumno.getNombre()%> <%= alumno.getPaterno()%>')">Calificar</button></td>
+                                    <td><strong><%= esc(matricula)%></strong></td>
+                                    <td><%= esc(nombreCompleto)%></td>
+                                    <td colspan="4" style="padding:0;">
+                                        <form id="<%= formId%>" action="${pageContext.request.contextPath}/PanelProfesor" method="POST"
+                                              style="display:flex; align-items:center; gap:6px; padding:6px 8px;">
+                                            <input type="hidden" name="accion" value="guardarCalificacion">
+                                            <input type="hidden" name="idInscripcion" value="<%= idInscripcion%>">
+                                            <input type="hidden" name="idAsigna" value="<%= idAsignaSeleccionado%>">
+                                            <input type="number" name="parcial1" min="0" max="10" step="0.1" style="width:60px;" value="<%= p1 != null ? p1 : ""%>">
+                                            <input type="number" name="parcial2" min="0" max="10" step="0.1" style="width:60px;" value="<%= p2 != null ? p2 : ""%>">
+                                            <input type="number" name="parcial3" min="0" max="10" step="0.1" style="width:60px;" value="<%= p3 != null ? p3 : ""%>">
+                                            <button type="submit" class="btn btn-primary btn-sm">💾</button>
+                                        </form>
+                                    </td>
                                 </tr>
                                 <% } %>
                             </tbody>
                         </table>
                         <% } %>
                     </div>
-
-                    <div class="form-panel" id="formPanel">
-                        <h3>Asignar calificación</h3>
-                        <form id="formCalificacion" action="${pageContext.request.contextPath}/PanelProfesor" method="POST">
-                            <input type="hidden" name="accion" value="guardarCalificacion">
-                            <input type="hidden" id="matriculaAlumno" name="matriculaAlumno">
-
-                            <div class="form-group">
-                                <label>Alumno seleccionado</label>
-                                <input type="text" id="nombreAlumnoSel" readonly placeholder="Selecciona un alumno de la tabla">
-                            </div>
-
-                            <div class="form-group">
-                                <label>Materia</label>
-                                <select id="idMateria" name="idMateria" required>
-                                    <option value="">-- Selecciona --</option>
-                                    <%
-                                        if (misMaterias != null)
-                                        {
-                                            for (Map.Entry<Integer, String> m : misMaterias.entrySet())
-                                            {
-                                    %>
-                                    <option value="<%= m.getKey()%>"><%= m.getValue()%></option>
-                                    <% } } %>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Periodo</label>
-                                <select id="periodo" name="periodo" required>
-                                    <option value="">-- Selecciona --</option>
-                                    <option value="2026-1">2026-1</option>
-                                    <option value="2026-2">2026-2</option>
-                                </select>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group"><label>Parcial 1</label><input type="number" name="parcial1" min="0" max="10" step="0.1" placeholder="8"></div>
-                                <div class="form-group"><label>Parcial 2</label><input type="number" name="parcial2" min="0" max="10" step="0.1" placeholder="9"></div>
-                            </div>
-                            <div class="form-group"><label>Parcial 3</label><input type="number" name="parcial3" min="0" max="10" step="0.1" placeholder="10"></div>
-
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">Guardar</button>
-                                <button type="button" class="btn btn-danger" onclick="limpiarFormulario()">Limpiar</button>
-                            </div>
-                        </form>
-                    </div>
                 </div>
-
-                <!-- SECCIÓN DE CAMBIO DE CONTRASEÑA -->
-                <section id="seccionSeguridad" style="margin-top: 30px; border-top: 2px solid var(--border); padding-top: 20px;">
-                    <div class="title-section">
-                        <div class="left">
-                            <h2>Cambiar contraseña</h2>
-                        </div>
-                    </div>
-
-                    <div class="form-panel" style="max-width:420px;">
-                        <form action="${pageContext.request.contextPath}/CambiarContrasena" method="POST" id="formCambioContrasena">
-                            <input type="hidden" name="accion" value="cambiarContrasena">
-
-                            <div class="form-group">
-                                <label for="contrasenaActual">Contraseña actual</label>
-                                <input type="password" id="contrasenaActual" name="contrasenaActual" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="contrasenaNueva">Contraseña nueva</label>
-                                <input type="password" id="contrasenaNueva" name="contrasenaNueva" minlength="8" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="contrasenaConfirmar">Confirmar contraseña nueva</label>
-                                <input type="password" id="contrasenaConfirmar" name="contrasenaConfirmar" minlength="8" required>
-                            </div>
-
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">Actualizar contraseña</button>
-                            </div>
-                        </form>
-                    </div>
-                </section>
+                <% }%>
             </main>
         </div>
-
-        <script>
-            function seleccionarAlumno(matricula, nombre)
-            {
-                document.getElementById('matriculaAlumno').value = matricula;
-                document.getElementById('nombreAlumnoSel').value = nombre + ' (' + matricula + ')';
-                document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-
-            function limpiarFormulario()
-            {
-                document.getElementById('formCalificacion').reset();
-                document.getElementById('nombreAlumnoSel').value = '';
-                document.getElementById('matriculaAlumno').value = '';
-            }
-
-            document.getElementById('formCalificacion').addEventListener('submit', function(e) {
-                const matricula = document.getElementById('matriculaAlumno').value.trim();
-                if (matricula === '') {
-                    e.preventDefault();
-                    alert('Por favor, selecciona un alumno de la tabla.');
-                }
-            });
-
-            document.getElementById('formCambioContrasena').addEventListener('submit', function(e) {
-                const actual = document.getElementById('contrasenaActual').value.trim();
-                const nueva = document.getElementById('contrasenaNueva').value.trim();
-                const confirmar = document.getElementById('contrasenaConfirmar').value.trim();
-
-                if (actual === '') {
-                    e.preventDefault();
-                    alert('Debes ingresar tu contraseña actual.');
-                    return;
-                }
-
-                if (nueva.length < 8) {
-                    e.preventDefault();
-                    alert('La contraseña nueva debe tener al menos 8 caracteres.');
-                    return;
-                }
-
-                if (nueva !== confirmar) {
-                    e.preventDefault();
-                    alert('La contraseña nueva y la confirmación no coinciden.');
-                    return;
-                }
-
-                if (actual === nueva) {
-                    e.preventDefault();
-                    alert('La contraseña nueva debe ser diferente a la actual.');
-                    return;
-                }
-            });
-        </script>
     </body>
 </html>

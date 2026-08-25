@@ -1,16 +1,15 @@
 package dao.alumno;
-
 import modelo.Calificacion;
 import modelo.Materia;
 import conexion.ConexionMySQL;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
 public class DAOAlumno
 {
-
-    public List<Calificacion> obtenerCalificacionesPorAlumno(int idAlumno)
+    // Recibe el IdUsuario de la sesión (usuario.getIdUsuario()), no el IdAlumno.
+    // El JOIN resuelve internamente qué alumno corresponde a ese usuario.
+    public List<Calificacion> obtenerCalificacionesPorAlumno(int idUsuario)
     {
         List<Calificacion> calificaciones = new ArrayList<>();
         String sql =
@@ -20,12 +19,11 @@ public class DAOAlumno
             "JOIN alumnos a ON i.IdAlumno = a.IdAlumno " +
             "JOIN asigna asg ON c.IdAsigna = asg.IdAsigna " +
             "JOIN materias m ON asg.IdMateria = m.IdMateria " +
-            "WHERE a.IdAlumno = ? " +
+            "WHERE a.IdUsuario = ? " +
             "ORDER BY m.Materia ASC, c.FechaRegistro DESC";
-
         try (Connection conn = ConexionMySQL.getConnection(); PreparedStatement ps = conn.prepareStatement(sql))
         {
-            ps.setInt(1, idAlumno);
+            ps.setInt(1, idUsuario);
             try (ResultSet rs = ps.executeQuery())
             {
                 while (rs.next())
@@ -38,7 +36,7 @@ public class DAOAlumno
                     calif.setFechaModificacion(rs.getTimestamp("FechaModificacion"));
                     calif.setIdInscripcion(rs.getInt("IdInscripcion"));
                     calif.setIdAsigna(rs.getInt("IdAsigna"));
-                    // Si tu modelo tiene un campo para el nombre de la materia, puedes agregarlo
+                    calif.setNombreMateria(rs.getString("nombreMateria"));
                     calificaciones.add(calif);
                 }
             }
@@ -49,7 +47,6 @@ public class DAOAlumno
         }
         return calificaciones;
     }
-
     public List<Materia> obtenerTodasLasMaterias()
     {
         List<Materia> materias = new ArrayList<>();
@@ -61,7 +58,8 @@ public class DAOAlumno
                 Materia materia = new Materia();
                 materia.setIdMateria(rs.getInt("IdMateria"));
                 materia.setMateria(rs.getString("Materia"));
-                // Si tu modelo tiene más campos, puedes setearlos
+                materia.setCuatrimestre(rs.getInt("Cuatrimestre"));
+                materia.setIdCarrera(rs.getInt("IdCarrera"));
                 materias.add(materia);
             }
         }

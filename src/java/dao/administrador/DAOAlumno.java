@@ -8,8 +8,6 @@ import java.util.List;
 
 public class DAOAlumno
 {
-    // Incluye EstadoCuenta: si ya tiene IdUsuario vinculado, "Activo"/lo que diga usuarios.Estado;
-    // si IdUsuario es NULL, el alumno está pre-registrado pero aún no se auto-registró -> "Pendiente".
     public List<Alumno> listar()
     {
         List<Alumno> alumnos = new ArrayList<>();
@@ -54,13 +52,11 @@ public class DAOAlumno
         return alumno;
     }
 
-    // Pre-registro: crea la fila en "alumnos" SIN cuenta de usuario todavía.
-    // El alumno se auto-registrará después haciendo match por Matricula+Correo
-    // (flujo que ya maneja tu SRegistrarUsuario).
+    // idGrupo == 0 significa "sin grupo asignado" -> se guarda NULL
     public boolean insertar(Alumno alumno)
     {
-        String sql = "INSERT INTO alumnos (Matricula, Nombre, Paterno, Materno, Correo, FechaRegistro, IdCarrera) " +
-                     "VALUES (?, ?, ?, ?, ?, NOW(), ?)";
+        String sql = "INSERT INTO alumnos (Matricula, Nombre, Paterno, Materno, Correo, FechaRegistro, IdCarrera, IdGrupo) " +
+                     "VALUES (?, ?, ?, ?, ?, NOW(), ?, ?)";
         try (Connection conn = ConexionMySQL.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql))
         {
@@ -70,6 +66,8 @@ public class DAOAlumno
             ps.setString(4, alumno.getMaterno());
             ps.setString(5, alumno.getCorreo());
             ps.setInt(6, alumno.getIdCarrera());
+            if (alumno.getIdGrupo() > 0) { ps.setInt(7, alumno.getIdGrupo()); }
+            else { ps.setNull(7, Types.INTEGER); }
             return ps.executeUpdate() > 0;
         }
         catch (SQLException e) { e.printStackTrace(); return false; }
@@ -77,7 +75,7 @@ public class DAOAlumno
 
     public boolean actualizar(Alumno alumno)
     {
-        String sql = "UPDATE alumnos SET Matricula = ?, Nombre = ?, Paterno = ?, Materno = ?, Correo = ?, IdCarrera = ? WHERE IdAlumno = ?";
+        String sql = "UPDATE alumnos SET Matricula = ?, Nombre = ?, Paterno = ?, Materno = ?, Correo = ?, IdCarrera = ?, IdGrupo = ? WHERE IdAlumno = ?";
         try (Connection conn = ConexionMySQL.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql))
         {
@@ -87,7 +85,9 @@ public class DAOAlumno
             ps.setString(4, alumno.getMaterno());
             ps.setString(5, alumno.getCorreo());
             ps.setInt(6, alumno.getIdCarrera());
-            ps.setInt(7, alumno.getIdAlumno());
+            if (alumno.getIdGrupo() > 0) { ps.setInt(7, alumno.getIdGrupo()); }
+            else { ps.setNull(7, Types.INTEGER); }
+            ps.setInt(8, alumno.getIdAlumno());
             return ps.executeUpdate() > 0;
         }
         catch (SQLException e) { e.printStackTrace(); return false; }
@@ -95,8 +95,6 @@ public class DAOAlumno
 
     public boolean eliminarPorMatricula(String matricula)
     {
-        // Si el alumno ya tiene cuenta (IdUsuario), lo correcto es eliminar desde "usuarios"
-        // para que el cascade limpie todo. Si aún no tiene cuenta, se borra directo de "alumnos".
         String sqlBuscarUsuario = "SELECT IdUsuario FROM alumnos WHERE Matricula = ?";
         try (Connection conn = ConexionMySQL.getConnection())
         {
