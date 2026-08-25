@@ -1,9 +1,20 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="modelo.Usuario, modelo.Asignacion, modelo.Profesor, modelo.Materia, modelo.Grupo, java.util.*"%>
+<%!
+    private String esc(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
+    }
+%>
 <%
     Usuario usuarioActual = (Usuario) session.getAttribute("usuario");
-    if (usuarioActual == null || !"Administrador".equals(usuarioActual.getTipoUsuario()))
-    {
+    if (usuarioActual == null || !"Administrador".equals(usuarioActual.getTipoUsuario())) {
         response.sendRedirect(request.getContextPath() + "/loginUsuario.jsp");
         return;
     }
@@ -17,8 +28,12 @@
 
     String mensaje = (String) session.getAttribute("mensaje");
     String error = (String) session.getAttribute("error");
-    if (mensaje != null) { session.removeAttribute("mensaje"); }
-    if (error != null) { session.removeAttribute("error"); }
+    if (mensaje != null) {
+        session.removeAttribute("mensaje");
+    }
+    if (error != null) {
+        session.removeAttribute("error");
+    }
 %>
 <!DOCTYPE html>
 <html>
@@ -32,16 +47,16 @@
 
             <jsp:include page="menuAdministrador.jsp"><jsp:param name="seccion" value="asignaciones"/></jsp:include>
 
-            <main class="content-area">
-                <div class="panel-header">
-                    <div class="left">
-                        <h1>Asignación de Materias a Profesores</h1>
-                        <span class="welcome-text">Bienvenido, <%= usuarioActual.getNombre()%></span>
+                <main class="content-area">
+                    <div class="panel-header">
+                        <div class="left">
+                            <h1>Asignación de Materias a Profesores</h1>
+                            <span class="welcome-text">Bienvenido, <%= esc(usuarioActual.getNombre())%></span>
                     </div>
                 </div>
 
-                <% if (mensaje != null) { %><div class="alert alert-success"><%= mensaje%></div><% } %>
-                <% if (error != null) { %><div class="alert alert-error"><%= error%></div><% } %>
+                <% if (mensaje != null) {%><div class="alert alert-success"><%= esc(mensaje)%></div><% } %>
+                <% if (error != null) {%><div class="alert alert-error"><%= esc(error)%></div><% } %>
 
                 <% if (faltanDatos) { %>
                 <div class="alert alert-error">
@@ -50,7 +65,7 @@
                     <a href="${pageContext.request.contextPath}/Materias">Materias</a> |
                     <a href="${pageContext.request.contextPath}/Grupos">Grupos</a>
                 </div>
-                <% } %>
+                <% }%>
 
                 <div class="title-section">
                     <div class="left">
@@ -80,16 +95,15 @@
                             <tbody>
                                 <%
                                     int contador = 0;
-                                    for (Asignacion a : asignaciones)
-                                    {
+                                    for (Asignacion a : asignaciones) {
                                         contador++;
                                 %>
                                 <tr>
                                     <td class="col-num"><%= contador%></td>
-                                    <td><%= a.getNombreProfesor()%></td>
-                                    <td><%= a.getNombreMateria()%></td>
-                                    <td><%= a.getNombreGrupo()%></td>
-                                    <td><%= a.getNombrePeriodo()%></td>
+                                    <td><%= esc(a.getNombreProfesor())%></td>
+                                    <td><%= esc(a.getNombreMateria())%></td>
+                                    <td><%= esc(a.getNombreGrupo())%></td>
+                                    <td><%= esc(a.getNombrePeriodo())%></td>
                                     <td class="col-acciones">
                                         <button class="btn btn-danger btn-sm" onclick="eliminarAsignacion(<%= a.getIdAsigna()%>)" title="Eliminar">🗑️</button>
                                     </td>
@@ -97,41 +111,44 @@
                                 <% } %>
                             </tbody>
                         </table>
-                        <% } %>
+                        <% }%>
                     </div>
 
                     <div class="form-panel" id="formPanel">
                         <h3>Nueva Asignación</h3>
                         <form action="${pageContext.request.contextPath}/Asignaciones" method="POST">
+
                             <div class="form-group">
                                 <label>Profesor</label>
-                                <select name="idProfesor" required>
-                                    <option value="">-- SELECCIONA UN PROFESOR --</option>
-                                    <% if (profesores != null) { for (Profesor p : profesores) { %>
-                                    <option value="<%= p.getIdProfesor()%>"><%= p.getNombre()%> <%= p.getPaterno()%></option>
-                                    <% } } %>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Materia</label>
-                                <select name="idMateria" required>
-                                    <option value="">-- SELECCIONA UNA MATERIA --</option>
-                                    <% if (materias != null) { for (Materia m : materias) { %>
-                                    <option value="<%= m.getIdMateria()%>"><%= m.getMateria()%> (Cuatri <%= m.getCuatrimestre()%>)</option>
-                                    <% } } %>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Grupo</label>
-                                <select name="idGrupo" required>
-                                    <option value="">-- SELECCIONA UN GRUPO --</option>
-                                    <% if (grupos != null) { for (Grupo g : grupos) { %>
-                                    <option value="<%= g.getIdGrupo()%>"><%= g.getCuatrimestre()%><%= g.getLetra()%> - <%= g.getGeneracion()%></option>
-                                    <% } } %>
-                                </select>
+                                <div class="combo-buscable" id="comboProfesor">
+                                    <input type="text" class="combo-input sin-seleccion" id="profesorTexto"
+                                           placeholder="Escribe para buscar un profesor..." autocomplete="off" readonly>
+                                    <input type="hidden" id="idProfesor" name="idProfesor" required>
+                                    <div class="combo-lista" id="profesorLista"></div>
+                                </div>
                             </div>
 
-                            <button type="submit" class="btn btn-primary" <%= faltanDatos ? "disabled" : ""%>>Asignar</button>
+                            <div class="form-group">
+                                <label>Materia</label>
+                                <div class="combo-buscable" id="comboMateria">
+                                    <input type="text" class="combo-input sin-seleccion" id="materiaTexto"
+                                           placeholder="Escribe para buscar una materia..." autocomplete="off" readonly>
+                                    <input type="hidden" id="idMateria" name="idMateria" required>
+                                    <div class="combo-lista" id="materiaLista"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Grupo</label>
+                                <div class="combo-buscable" id="comboGrupo">
+                                    <input type="text" class="combo-input sin-seleccion" id="grupoTexto"
+                                           placeholder="Escribe para buscar un grupo..." autocomplete="off" readonly>
+                                    <input type="hidden" id="idGrupo" name="idGrupo" required>
+                                    <div class="combo-lista" id="grupoLista"></div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" <%= faltanDatos ? "disabled" : ""%> style="margin-top:10px;">Asignar</button>
                         </form>
                     </div>
                 </div>
@@ -139,11 +156,151 @@
         </div>
 
         <script>
-            function eliminarAsignacion(id)
+            // Quita acentos para que "matematicas" encuentre "Matemáticas" y viceversa
+            function normalizarTexto(texto)
             {
-                if (confirm('⚠️ ¿Eliminar esta asignación?\nSe eliminarán también las calificaciones capturadas para ella.'))
-                { window.location.href = '${pageContext.request.contextPath}/Asignaciones?accion=eliminar&idAsigna=' + id; }
+                return (texto || "")
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "")
+                        .toLowerCase();
             }
+
+            // ===== Datos para los combos (vienen del JSP) =====
+            var opcionesProfesor = [
+            <% if (profesores != null) {
+                        boolean primero = true;
+                        for (Profesor p : profesores) {
+                            if (!primero) {
+                                out.print(",");
+                            }
+                            primero = false;%>
+                {id: <%= p.getIdProfesor()%>, nombre: "<%= esc(p.getNombre() + " " + p.getPaterno()).replace("\"", "\\\"")%>"}
+            <% }
+                    } %>
+            ];
+            var opcionesMateria = [
+            <% if (materias != null) {
+                        boolean primero = true;
+                        for (Materia m : materias) {
+                            if (!primero) {
+                                out.print(",");
+                            }
+                            primero = false;%>
+                {id: <%= m.getIdMateria()%>, nombre: "<%= esc(m.getMateria()).replace("\"", "\\\"")%> (Cuatri <%= m.getCuatrimestre()%>)"}
+            <% }
+                    } %>
+            ];
+            var opcionesGrupo = [
+            <% if (grupos != null) {
+                        boolean primero = true;
+                        for (Grupo g : grupos) {
+                            if (!primero) {
+                                out.print(",");
+                            }
+                            primero = false;%>
+                {id: <%= g.getIdGrupo()%>, nombre: "<%= g.getCuatrimestre()%><%= esc(g.getLetra())%> - <%= esc(g.getGeneracion()).replace("\"", "\\\"")%>"}
+            <% }
+                    }%>
+                    ];
+
+                    // ===== Componente genérico de combo buscable =====
+                    function crearComboBuscable(idContenedor, idTexto, idOculto, idLista, opciones)
+                    {
+                        var inputTexto = document.getElementById(idTexto);
+                        var inputOculto = document.getElementById(idOculto);
+                        var lista = document.getElementById(idLista);
+
+                        function renderLista(filtro)
+                        {
+                            var filtroNormalizado = normalizarTexto(filtro);
+                            var filtradas = opciones.filter(function (op) {
+                                return normalizarTexto(op.nombre).indexOf(filtroNormalizado) !== -1;
+                            });
+
+                            lista.innerHTML = "";
+
+                            if (filtradas.length === 0)
+                            {
+                                var vacio = document.createElement("div");
+                                vacio.className = "combo-opcion sin-resultados";
+                                vacio.textContent = "Sin resultados";
+                                lista.appendChild(vacio);
+                                return;
+                            }
+
+                            filtradas.forEach(function (op) {
+                                var item = document.createElement("div");
+                                item.className = "combo-opcion";
+                                item.textContent = op.nombre;
+                                item.addEventListener("mousedown", function (e) {
+                                    e.preventDefault();
+                                    seleccionar(op);
+                                });
+                                lista.appendChild(item);
+                            });
+                        }
+
+                        function seleccionar(op)
+                        {
+                            inputTexto.value = op.nombre;
+                            inputTexto.classList.remove("sin-seleccion");
+                            inputOculto.value = op.id;
+                            cerrarLista();
+                        }
+
+                        function abrirLista()
+                        {
+                            inputTexto.readOnly = false;
+                            lista.classList.add("abierta");
+                            renderLista(inputOculto.value ? "" : inputTexto.value);
+                        }
+
+                        function cerrarLista()
+                        {
+                            lista.classList.remove("abierta");
+                            inputTexto.readOnly = true;
+                        }
+
+                        inputTexto.addEventListener("click", function () {
+                            inputTexto.value = "";
+                            abrirLista();
+                        });
+
+                        inputTexto.addEventListener("input", function () {
+                            renderLista(inputTexto.value);
+                        });
+
+                        inputTexto.addEventListener("blur", function () {
+                            setTimeout(function () {
+                                if (!inputOculto.value)
+                                {
+                                    inputTexto.value = "";
+                                    inputTexto.classList.add("sin-seleccion");
+                                } else if (inputTexto.value === "")
+                                {
+                                    var actual = opciones.find(function (o) {
+                                        return String(o.id) === String(inputOculto.value);
+                                    });
+                                    if (actual) {
+                                        inputTexto.value = actual.nombre;
+                                    }
+                                }
+                                cerrarLista();
+                            }, 150);
+                        });
+                    }
+
+                    crearComboBuscable("comboProfesor", "profesorTexto", "idProfesor", "profesorLista", opcionesProfesor);
+                    crearComboBuscable("comboMateria", "materiaTexto", "idMateria", "materiaLista", opcionesMateria);
+                    crearComboBuscable("comboGrupo", "grupoTexto", "idGrupo", "grupoLista", opcionesGrupo);
+
+                    function eliminarAsignacion(id)
+                    {
+                        if (confirm('⚠️ ¿Eliminar esta asignación?\nSe eliminarán también las calificaciones capturadas para ella.'))
+                        {
+                            window.location.href = '${pageContext.request.contextPath}/Asignaciones?accion=eliminar&idAsigna=' + id;
+                        }
+                    }
         </script>
     </body>
 </html>

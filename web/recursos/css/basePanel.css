@@ -486,6 +486,43 @@ html, body
 .stat-info span { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.3px; }
 
 
+/* ===== COMBO BUSCABLE (Carrera / Periodo) ===== */
+
+.combo-buscable { position: relative; }
+
+.combo-buscable input.combo-input
+{
+    width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 7px;
+    font-size: 13px; background: var(--white); font-family: 'Inter', sans-serif;
+    cursor: text;
+}
+.combo-buscable input.combo-input:focus
+{
+    outline: none; border-color: var(--steel-light);
+    box-shadow: 0 0 0 3px rgba(59,59,152,0.12);
+}
+.combo-buscable input.combo-input.sin-seleccion { color: var(--ink-soft); }
+
+.combo-lista
+{
+    display: none;
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 50;
+    background: var(--white); border: 1px solid var(--border); border-radius: 9px;
+    box-shadow: 0 8px 24px rgba(19,26,60,0.16);
+    max-height: 220px; overflow-y: auto;
+}
+.combo-lista.abierta { display: block; }
+
+.combo-opcion
+{
+    padding: 9px 12px; font-size: 13px; cursor: pointer;
+    border-bottom: 1px solid var(--border);
+}
+.combo-opcion:last-child { border-bottom: none; }
+.combo-opcion:hover, .combo-opcion.resaltada { background: #EEF0FE; color: var(--steel-light); }
+.combo-opcion.sin-resultados { color: var(--ink-soft); cursor: default; }
+.combo-opcion.sin-resultados:hover { background: transparent; }
+
 /* ===== RESPONSIVE ===== */
 
 @media (max-width: 1100px)

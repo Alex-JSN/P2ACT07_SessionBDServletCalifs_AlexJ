@@ -1,11 +1,10 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="modelo.Usuario, modelo.Grupo, modelo.Carrera, modelo.Periodo, java.util.*"%>
 <%!
-    // Escapa caracteres especiales de HTML/atributos para evitar XSS.
-    // Usalo siempre que insertes datos de usuario o BD dentro de una expresion de salida,
-    // ya sea en el cuerpo del HTML o dentro de un atributo (value="...", data-x="...").
     private String esc(String s) {
-        if (s == null) return "";
+        if (s == null) {
+            return "";
+        }
         return s.replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
@@ -15,8 +14,7 @@
 %>
 <%
     Usuario usuarioActual = (Usuario) session.getAttribute("usuario");
-    if (usuarioActual == null || !"Administrador".equals(usuarioActual.getTipoUsuario()))
-    {
+    if (usuarioActual == null || !"Administrador".equals(usuarioActual.getTipoUsuario())) {
         response.sendRedirect(request.getContextPath() + "/loginUsuario.jsp");
         return;
     }
@@ -26,17 +24,29 @@
     List<Periodo> periodos = (List<Periodo>) request.getAttribute("periodos");
 
     Map<Integer, String> nombreCarreraPorId = new HashMap<>();
-    if (carreras != null) { for (Carrera c : carreras) { nombreCarreraPorId.put(c.getIdCarrera(), c.getCarrera()); } }
+    if (carreras != null) {
+        for (Carrera c : carreras) {
+            nombreCarreraPorId.put(c.getIdCarrera(), c.getCarrera());
+        }
+    }
 
     Map<Integer, String> nombrePeriodoPorId = new HashMap<>();
-    if (periodos != null) { for (Periodo p : periodos) { nombrePeriodoPorId.put(p.getIdPeriodo(), p.getNombre()); } }
+    if (periodos != null) {
+        for (Periodo p : periodos) {
+            nombrePeriodoPorId.put(p.getIdPeriodo(), p.getNombre());
+        }
+    }
 
     boolean faltanDatos = (carreras == null || carreras.isEmpty() || periodos == null || periodos.isEmpty());
 
     String mensaje = (String) session.getAttribute("mensaje");
     String error = (String) session.getAttribute("error");
-    if (mensaje != null) { session.removeAttribute("mensaje"); }
-    if (error != null) { session.removeAttribute("error"); }
+    if (mensaje != null) {
+        session.removeAttribute("mensaje");
+    }
+    if (error != null) {
+        session.removeAttribute("error");
+    }
 %>
 <!DOCTYPE html>
 <html>
@@ -51,16 +61,16 @@
 
             <jsp:include page="menuAdministrador.jsp"><jsp:param name="seccion" value="grupos"/></jsp:include>
 
-            <main class="content-area">
-                <div class="panel-header">
-                    <div class="left">
-                        <h1>Gestión de Grupos</h1>
-                        <span class="welcome-text">Bienvenido, <%= esc(usuarioActual.getNombre())%></span>
+                <main class="content-area">
+                    <div class="panel-header">
+                        <div class="left">
+                            <h1>Gestión de Grupos</h1>
+                            <span class="welcome-text">Bienvenido, <%= esc(usuarioActual.getNombre())%></span>
                     </div>
                 </div>
 
-                <% if (mensaje != null) { %><div class="alert alert-success"><%= esc(mensaje)%></div><% } %>
-                <% if (error != null) { %><div class="alert alert-error"><%= esc(error)%></div><% } %>
+                <% if (mensaje != null) {%><div class="alert alert-success"><%= esc(mensaje)%></div><% } %>
+                <% if (error != null) {%><div class="alert alert-error"><%= esc(error)%></div><% } %>
 
                 <% if (faltanDatos) { %>
                 <div class="alert alert-error">
@@ -68,7 +78,7 @@
                     <a href="${pageContext.request.contextPath}/Carreras">Ir a Carreras</a> |
                     <a href="${pageContext.request.contextPath}/Periodos">Ir a Periodos</a>
                 </div>
-                <% } %>
+                <% }%>
 
                 <div class="title-section">
                     <div class="left">
@@ -98,8 +108,7 @@
                             <tbody>
                                 <%
                                     int contador = 0;
-                                    for (Grupo g : grupos)
-                                    {
+                                    for (Grupo g : grupos) {
                                         contador++;
                                         String nombreCarrera = nombreCarreraPorId.getOrDefault(g.getIdCarrera(), "—");
                                         String nombrePeriodo = nombrePeriodoPorId.getOrDefault(g.getIdPeriodo(), "—");
@@ -111,18 +120,15 @@
                                     <td><%= esc(nombreCarrera)%></td>
                                     <td><%= esc(nombrePeriodo)%></td>
                                     <td class="col-acciones">
-                                        <!--
-                                            Antes: onclick="editarGrupo(..., '<%= g.getGeneracion() %>', ..., '<%= g.getLetra() %>', ...)"
-                                            Sin ningun escape. Una Generacion como 2024's o con comillas
-                                            rompia el JS directamente. Ahora va todo por data-*.
-                                        -->
                                         <button class="btn btn-warning btn-sm btn-editar"
                                                 data-id="<%= g.getIdGrupo()%>"
                                                 data-generacion="<%= esc(g.getGeneracion())%>"
                                                 data-cuatrimestre="<%= g.getCuatrimestre()%>"
                                                 data-letra="<%= esc(g.getLetra())%>"
                                                 data-id-carrera="<%= g.getIdCarrera()%>"
+                                                data-nombre-carrera="<%= esc(nombreCarrera)%>"
                                                 data-id-periodo="<%= g.getIdPeriodo()%>"
+                                                data-nombre-periodo="<%= esc(nombrePeriodo)%>"
                                                 title="Editar">✏️</button>
                                         <button class="btn btn-danger btn-sm btn-eliminar"
                                                 data-id="<%= g.getIdGrupo()%>"
@@ -132,7 +138,7 @@
                                 <% } %>
                             </tbody>
                         </table>
-                        <% } %>
+                        <% }%>
                     </div>
 
                     <div class="form-panel" id="formPanel">
@@ -158,23 +164,25 @@
                                            placeholder="Ej: A">
                                 </div>
                             </div>
+
                             <div class="form-group">
                                 <label>Carrera</label>
-                                <select id="idCarrera" name="idCarrera" required>
-                                    <option value="">-- SELECCIONA UNA CARRERA --</option>
-                                    <% if (carreras != null) { for (Carrera c : carreras) { %>
-                                    <option value="<%= c.getIdCarrera()%>"><%= esc(c.getCarrera())%></option>
-                                    <% } } %>
-                                </select>
+                                <div class="combo-buscable" id="comboCarrera">
+                                    <input type="text" class="combo-input sin-seleccion" id="carreraTexto"
+                                           placeholder="Escribe para buscar una carrera..." autocomplete="off" readonly>
+                                    <input type="hidden" id="idCarrera" name="idCarrera" required>
+                                    <div class="combo-lista" id="carreraLista"></div>
+                                </div>
                             </div>
+
                             <div class="form-group">
                                 <label>Periodo</label>
-                                <select id="idPeriodo" name="idPeriodo" required>
-                                    <option value="">-- SELECCIONA UN PERIODO --</option>
-                                    <% if (periodos != null) { for (Periodo p : periodos) { %>
-                                    <option value="<%= p.getIdPeriodo()%>"><%= esc(p.getNombre())%></option>
-                                    <% } } %>
-                                </select>
+                                <div class="combo-buscable" id="comboPeriodo">
+                                    <input type="text" class="combo-input sin-seleccion" id="periodoTexto"
+                                           placeholder="Escribe para buscar un periodo..." autocomplete="off" readonly>
+                                    <input type="hidden" id="idPeriodo" name="idPeriodo" required>
+                                    <div class="combo-lista" id="periodoLista"></div>
+                                </div>
                             </div>
 
                             <div class="form-actions">
@@ -188,16 +196,158 @@
         </div>
 
         <script>
+            // Quita acentos para que "matematicas" encuentre "Matemáticas" y viceversa
+            function normalizarTexto(texto)
+            {
+                return (texto || "")
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "")
+                        .toLowerCase();
+            }
+
+            // ===== Datos para los combos buscables (vienen del JSP) =====
+            var opcionesCarrera = [
+            <% if (carreras != null) {
+                        boolean primero = true;
+                        for (Carrera c : carreras) {
+                            if (!primero) {
+                                out.print(",");
+                            }
+                            primero = false;%>
+                {id: <%= c.getIdCarrera()%>, nombre: "<%= esc(c.getCarrera()).replace("\"", "\\\"")%>"}
+            <% }
+                    } %>
+            ];
+            var opcionesPeriodo = [
+            <% if (periodos != null) {
+                        boolean primero = true;
+                        for (Periodo p : periodos) {
+                            if (!primero) {
+                                out.print(",");
+                            }
+                            primero = false;%>
+                {id: <%= p.getIdPeriodo()%>, nombre: "<%= esc(p.getNombre()).replace("\"", "\\\"")%>"}
+            <% }
+                    }%>
+            ];
+
+            // ===== Componente genérico de combo buscable =====
+            function crearComboBuscable(idContenedor, idTexto, idOculto, idLista, opciones)
+            {
+                var contenedor = document.getElementById(idContenedor);
+                var inputTexto = document.getElementById(idTexto);
+                var inputOculto = document.getElementById(idOculto);
+                var lista = document.getElementById(idLista);
+
+                function renderLista(filtro)
+                {
+                    var filtroNormalizado = normalizarTexto(filtro);
+                    var filtradas = opciones.filter(function (op) {
+                        return normalizarTexto(op.nombre).indexOf(filtroNormalizado) !== -1;
+                    });
+
+                    lista.innerHTML = "";
+
+                    if (filtradas.length === 0)
+                    {
+                        var vacio = document.createElement("div");
+                        vacio.className = "combo-opcion sin-resultados";
+                        vacio.textContent = "Sin resultados";
+                        lista.appendChild(vacio);
+                        return;
+                    }
+
+                    filtradas.forEach(function (op) {
+                        var item = document.createElement("div");
+                        item.className = "combo-opcion";
+                        item.textContent = op.nombre;
+                        item.addEventListener("mousedown", function (e) {
+                            e.preventDefault();
+                            seleccionar(op);
+                        });
+                        lista.appendChild(item);
+                    });
+                }
+
+                function seleccionar(op)
+                {
+                    inputTexto.value = op.nombre;
+                    inputTexto.classList.remove("sin-seleccion");
+                    inputOculto.value = op.id;
+                    cerrarLista();
+                }
+
+                function abrirLista()
+                {
+                    inputTexto.readOnly = false;
+                    lista.classList.add("abierta");
+                    renderLista(inputOculto.value ? "" : inputTexto.value);
+                }
+
+                function cerrarLista()
+                {
+                    lista.classList.remove("abierta");
+                    inputTexto.readOnly = true;
+                }
+
+                inputTexto.addEventListener("click", function () {
+                    inputTexto.value = "";
+                    abrirLista();
+                });
+
+                inputTexto.addEventListener("input", function () {
+                    renderLista(inputTexto.value);
+                });
+
+                inputTexto.addEventListener("blur", function () {
+                    setTimeout(function () {
+                        if (!inputOculto.value)
+                        {
+                            inputTexto.value = "";
+                            inputTexto.classList.add("sin-seleccion");
+                        } else if (inputTexto.value === "")
+                        {
+                            var actual = opciones.find(function (o) {
+                                return String(o.id) === String(inputOculto.value);
+                            });
+                            if (actual) {
+                                inputTexto.value = actual.nombre;
+                            }
+                        }
+                        cerrarLista();
+                    }, 150);
+                });
+
+                contenedor.setSeleccion = function (id, nombre)
+                {
+                    inputOculto.value = id;
+                    inputTexto.value = nombre;
+                    inputTexto.classList.remove("sin-seleccion");
+                };
+
+                contenedor.limpiar = function ()
+                {
+                    inputOculto.value = "";
+                    inputTexto.value = "";
+                    inputTexto.classList.add("sin-seleccion");
+                };
+            }
+
+            crearComboBuscable("comboCarrera", "carreraTexto", "idCarrera", "carreraLista", opcionesCarrera);
+            crearComboBuscable("comboPeriodo", "periodoTexto", "idPeriodo", "periodoLista", opcionesPeriodo);
+
             document.querySelectorAll('.btn-editar').forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     editarGrupo(
-                        this.dataset.id,
-                        this.dataset.generacion,
-                        this.dataset.cuatrimestre,
-                        this.dataset.letra,
-                        this.dataset.idCarrera,
-                        this.dataset.idPeriodo
-                    );
+                            this.dataset.id,
+                            this.dataset.generacion,
+                            this.dataset.cuatrimestre,
+                            this.dataset.letra,
+                            this.dataset.idCarrera,
+                            this.dataset.nombreCarrera,
+                            this.dataset.idPeriodo,
+                            this.dataset.nombrePeriodo
+                            );
                 });
             });
 
@@ -207,7 +357,7 @@
                 });
             });
 
-            function editarGrupo(id, generacion, cuatrimestre, letra, idCarrera, idPeriodo)
+            function editarGrupo(id, generacion, cuatrimestre, letra, idCarrera, nombreCarrera, idPeriodo, nombrePeriodo)
             {
                 document.getElementById('formTitulo').innerText = 'Editar Grupo';
                 document.getElementById('accion').value = 'actualizar';
@@ -215,15 +365,19 @@
                 document.getElementById('generacion').value = generacion;
                 document.getElementById('cuatrimestre').value = cuatrimestre;
                 document.getElementById('letra').value = letra;
-                document.getElementById('idCarrera').value = idCarrera;
-                document.getElementById('idPeriodo').value = idPeriodo;
+
+                document.getElementById('comboCarrera').setSeleccion(idCarrera, nombreCarrera);
+                document.getElementById('comboPeriodo').setSeleccion(idPeriodo, nombrePeriodo);
+
                 document.getElementById('formPanel').scrollIntoView({behavior: 'smooth', block: 'start'});
             }
 
             function eliminarGrupo(id)
             {
                 if (confirm('⚠️ ¿Eliminar este grupo?\nSe eliminarán también sus asignaciones de materias y se desvincularán sus alumnos.'))
-                { window.location.href = '${pageContext.request.contextPath}/Grupos?accion=eliminar&idGrupo=' + id; }
+                {
+                    window.location.href = '${pageContext.request.contextPath}/Grupos?accion=eliminar&idGrupo=' + id;
+                }
             }
 
             function limpiarFormulario()
@@ -232,6 +386,8 @@
                 document.getElementById('accion').value = 'crear';
                 document.getElementById('idGrupo').value = '';
                 document.getElementById('formGrupo').reset();
+                document.getElementById('comboCarrera').limpiar();
+                document.getElementById('comboPeriodo').limpiar();
             }
         </script>
     </body>
