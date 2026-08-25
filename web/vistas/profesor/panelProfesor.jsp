@@ -5,7 +5,7 @@
 
     if (usuarioActual == null || !"Profesor".equals(usuarioActual.getTipoUsuario()))
     {
-        response.sendRedirect(request.getContextPath() + "/loginUsuario.jsp");
+        response.sendRedirect(request.getContextPath() + "/vistas/loginUsuario.jsp");
         return;
     }
 
@@ -76,7 +76,7 @@
                                     <td class="col-matricula"><strong><%= alumno.getMatricula()%></strong></td>
                                     <td class="col-nombre"><%= alumno.getNombre()%> <%= alumno.getPaterno()%> <%= alumno.getMaterno() != null ? alumno.getMaterno() : ""%></td>
                                     <td class="col-correo"><%= alumno.getCorreo()%></td>
-                                    <td class="col-acciones"><button type="button" class="btn btn-primary btn-sm">Calificar</button></td>
+                                    <td class="col-acciones"><button type="button" class="btn btn-primary btn-sm" onclick="seleccionarAlumno('<%= alumno.getMatricula()%>', '<%= alumno.getNombre()%> <%= alumno.getPaterno()%>')">Calificar</button></td>
                                 </tr>
                                 <% } %>
                             </tbody>
@@ -97,7 +97,7 @@
 
                             <div class="form-group">
                                 <label>Materia</label>
-                                <select id="idMateria" name="idMateria">
+                                <select id="idMateria" name="idMateria" required>
                                     <option value="">-- Selecciona --</option>
                                     <%
                                         if (misMaterias != null)
@@ -112,8 +112,9 @@
 
                             <div class="form-group">
                                 <label>Periodo</label>
-                                <select id="periodo" name="periodo">
-                                    <option value="2026-1" selected>2026-1</option>
+                                <select id="periodo" name="periodo" required>
+                                    <option value="">-- Selecciona --</option>
+                                    <option value="2026-1">2026-1</option>
                                     <option value="2026-2">2026-2</option>
                                 </select>
                             </div>
@@ -131,6 +132,40 @@
                         </form>
                     </div>
                 </div>
+
+                <!-- SECCIÓN DE CAMBIO DE CONTRASEÑA -->
+                <section id="seccionSeguridad" style="margin-top: 30px; border-top: 2px solid var(--border); padding-top: 20px;">
+                    <div class="title-section">
+                        <div class="left">
+                            <h2>Cambiar contraseña</h2>
+                        </div>
+                    </div>
+
+                    <div class="form-panel" style="max-width:420px;">
+                        <form action="${pageContext.request.contextPath}/CambiarContrasena" method="POST" id="formCambioContrasena">
+                            <input type="hidden" name="accion" value="cambiarContrasena">
+
+                            <div class="form-group">
+                                <label for="contrasenaActual">Contraseña actual</label>
+                                <input type="password" id="contrasenaActual" name="contrasenaActual" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contrasenaNueva">Contraseña nueva</label>
+                                <input type="password" id="contrasenaNueva" name="contrasenaNueva" minlength="8" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contrasenaConfirmar">Confirmar contraseña nueva</label>
+                                <input type="password" id="contrasenaConfirmar" name="contrasenaConfirmar" minlength="8" required>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">Actualizar contraseña</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
             </main>
         </div>
 
@@ -139,6 +174,7 @@
             {
                 document.getElementById('matriculaAlumno').value = matricula;
                 document.getElementById('nombreAlumnoSel').value = nombre + ' (' + matricula + ')';
+                document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
 
             function limpiarFormulario()
@@ -147,6 +183,44 @@
                 document.getElementById('nombreAlumnoSel').value = '';
                 document.getElementById('matriculaAlumno').value = '';
             }
+
+            document.getElementById('formCalificacion').addEventListener('submit', function(e) {
+                const matricula = document.getElementById('matriculaAlumno').value.trim();
+                if (matricula === '') {
+                    e.preventDefault();
+                    alert('Por favor, selecciona un alumno de la tabla.');
+                }
+            });
+
+            document.getElementById('formCambioContrasena').addEventListener('submit', function(e) {
+                const actual = document.getElementById('contrasenaActual').value.trim();
+                const nueva = document.getElementById('contrasenaNueva').value.trim();
+                const confirmar = document.getElementById('contrasenaConfirmar').value.trim();
+
+                if (actual === '') {
+                    e.preventDefault();
+                    alert('Debes ingresar tu contraseña actual.');
+                    return;
+                }
+
+                if (nueva.length < 8) {
+                    e.preventDefault();
+                    alert('La contraseña nueva debe tener al menos 8 caracteres.');
+                    return;
+                }
+
+                if (nueva !== confirmar) {
+                    e.preventDefault();
+                    alert('La contraseña nueva y la confirmación no coinciden.');
+                    return;
+                }
+
+                if (actual === nueva) {
+                    e.preventDefault();
+                    alert('La contraseña nueva debe ser diferente a la actual.');
+                    return;
+                }
+            });
         </script>
     </body>
 </html>

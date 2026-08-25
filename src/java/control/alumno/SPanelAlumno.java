@@ -1,4 +1,5 @@
 package control.alumno;
+
 import dao.alumno.DAOAlumno;
 import modelo.Usuario;
 import modelo.Calificacion;
@@ -11,12 +12,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
+
 @WebServlet(name = "SPanelAlumno", urlPatterns = {"/PanelAlumno"})
 public class SPanelAlumno extends HttpServlet
 {
     private DAOAlumno daoAlumno = new DAOAlumno();
+    
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException
     {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("usuario") == null)
@@ -24,12 +28,14 @@ public class SPanelAlumno extends HttpServlet
             response.sendRedirect(request.getContextPath() + "/vistas/loginUsuario.jsp");
             return;
         }
+        
         Usuario usuario = (Usuario) session.getAttribute("usuario");
         if (!"Alumno".equals(usuario.getTipoUsuario()))
         {
             response.sendRedirect(request.getContextPath() + "/vistas/loginUsuario.jsp");
             return;
         }
+        
         try
         {
             Integer idUsuario = usuario.getIdUsuario();
@@ -50,6 +56,7 @@ public class SPanelAlumno extends HttpServlet
             e.printStackTrace();
             request.setAttribute("error", "Error al cargar las calificaciones: " + e.getMessage());
         }
+        
         request.getRequestDispatcher("/vistas/alumno/panelAlumno.jsp").forward(request, response);
     }
 }

@@ -3,16 +3,18 @@
 <%
     Usuario usuarioActual = (Usuario) session.getAttribute("usuario");
 
-    if (usuarioActual == null || !"Alumno".equals(usuarioActual.getTipoUsuario()))
-    {
-        response.sendRedirect(request.getContextPath() + "/loginUsuario.jsp");
+    if (usuarioActual == null || !"Alumno".equals(usuarioActual.getTipoUsuario())) {
+        response.sendRedirect(request.getContextPath() + "/vistas/loginUsuario.jsp");
         return;
     }
 
     List<Calificacion> calificaciones = (List<Calificacion>) request.getAttribute("calificaciones");
     List<Materia> materias = (List<Materia>) request.getAttribute("materias");
 
-    String error = (String) request.getAttribute("error");
+    String error = (String) session.getAttribute("error");
+    String mensaje = (String) session.getAttribute("mensaje");
+    if (error != null) { session.removeAttribute("error"); }
+    if (mensaje != null) { session.removeAttribute("mensaje"); }
 %>
 <!DOCTYPE html>
 <html>
@@ -34,7 +36,12 @@
                     </div>
                 </div>
 
-                <% if (error != null) { %><div class="alert alert-error"><%= error%></div><% } %>
+                <% if (error != null) { %>
+                    <div class="alert alert-error"><%= error%></div>
+                <% } %>
+                <% if (mensaje != null) { %>
+                    <div class="alert alert-success"><%= mensaje%></div>
+                <% } %>
 
                 <section id="seccionCalificaciones">
                     <div class="title-section">
@@ -53,13 +60,6 @@
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <%--
-                                        TODO: columna "Materia". Calificacion no trae
-                                        IdMateria directo (se relaciona por IdAsigna
-                                        en tu tabla calificaciones). Cuando el DAO
-                                        haga el JOIN asigna->materias y el modelo
-                                        exponga el nombre resuelto, la agregamos.
-                                    --%>
                                     <th class="col-calif">P1</th>
                                     <th class="col-calif">P2</th>
                                     <th class="col-calif">P3</th>
@@ -68,8 +68,7 @@
                             </thead>
                             <tbody>
                                 <%
-                                    for (Calificacion c : calificaciones)
-                                    {
+                                    for (Calificacion c : calificaciones) {
                                         String p1 = c.getParcial1() != null ? String.valueOf(c.getParcial1()) : "-";
                                         String p2 = c.getParcial2() != null ? String.valueOf(c.getParcial2()) : "-";
                                         String p3 = c.getParcial3() != null ? String.valueOf(c.getParcial3()) : "-";
@@ -90,31 +89,31 @@
                     </div>
                 </section>
 
-                <section id="seccionSeguridad">
+                <!-- SECCIÓN DE CAMBIO DE CONTRASEÑA - SIEMPRE VISIBLE -->
+                <section id="seccionSeguridad" style="margin-top: 30px; border-top: 2px solid var(--border); padding-top: 20px;">
                     <div class="title-section">
-                        <div class="left"><h2>Cambiar contraseña</h2></div>
+                        <div class="left">
+                            <h2>Cambiar contraseña</h2>
+                        </div>
                     </div>
 
                     <div class="form-panel" style="max-width:420px;">
-                        <form action="${pageContext.request.contextPath}/PanelAlumno" method="POST">
+                        <form action="${pageContext.request.contextPath}/CambiarContrasena" method="POST" id="formCambioContrasena">
                             <input type="hidden" name="accion" value="cambiarContrasena">
 
-                            <div class="form-group password-field-wrap">
-                                <label>Contraseña actual</label>
+                            <div class="form-group">
+                                <label for="contrasenaActual">Contraseña actual</label>
                                 <input type="password" id="contrasenaActual" name="contrasenaActual" required>
-                                <span class="toggle-eye" onclick="togglePassword('contrasenaActual', this)">👁️</span>
                             </div>
 
-                            <div class="form-group password-field-wrap">
-                                <label>Contraseña nueva</label>
+                            <div class="form-group">
+                                <label for="contrasenaNueva">Contraseña nueva</label>
                                 <input type="password" id="contrasenaNueva" name="contrasenaNueva" minlength="8" required>
-                                <span class="toggle-eye" onclick="togglePassword('contrasenaNueva', this)">👁️</span>
                             </div>
 
-                            <div class="form-group password-field-wrap">
-                                <label>Confirmar contraseña nueva</label>
+                            <div class="form-group">
+                                <label for="contrasenaConfirmar">Confirmar contraseña nueva</label>
                                 <input type="password" id="contrasenaConfirmar" name="contrasenaConfirmar" minlength="8" required>
-                                <span class="toggle-eye" onclick="togglePassword('contrasenaConfirmar', this)">👁️</span>
                             </div>
 
                             <div class="form-actions">
@@ -127,21 +126,33 @@
         </div>
 
         <script>
-            function togglePassword(id, icono)
-            {
-                const campo = document.getElementById(id);
-                if (campo.type === 'password') { campo.type = 'text'; icono.textContent = '🙈'; }
-                else { campo.type = 'password'; icono.textContent = '👁️'; }
-            }
+            document.getElementById('formCambioContrasena').addEventListener('submit', function(e) {
+                const actual = document.getElementById('contrasenaActual').value.trim();
+                const nueva = document.getElementById('contrasenaNueva').value.trim();
+                const confirmar = document.getElementById('contrasenaConfirmar').value.trim();
 
-            document.querySelector('form[action$="PanelAlumno"]').addEventListener('submit', function (e)
-            {
-                const nueva = document.getElementById('contrasenaNueva').value;
-                const confirmar = document.getElementById('contrasenaConfirmar').value;
-                if (nueva !== confirmar)
-                {
+                if (actual === '') {
+                    e.preventDefault();
+                    alert('Debes ingresar tu contraseña actual.');
+                    return;
+                }
+
+                if (nueva.length < 8) {
+                    e.preventDefault();
+                    alert('La contraseña nueva debe tener al menos 8 caracteres.');
+                    return;
+                }
+
+                if (nueva !== confirmar) {
                     e.preventDefault();
                     alert('La contraseña nueva y la confirmación no coinciden.');
+                    return;
+                }
+
+                if (actual === nueva) {
+                    e.preventDefault();
+                    alert('La contraseña nueva debe ser diferente a la actual.');
+                    return;
                 }
             });
         </script>
